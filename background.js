@@ -1,27 +1,32 @@
-// Service Worker para la extensión (background.js)
+// background.js
+// Service Worker to handle context menu and communication.
 
-// Escuchador de instalación de la extensión
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('Dialéctica Hybrida 369 instalada');
-  
-  // Crear menú contextual para selección de texto
-  chrome.contextMenus.create({
-    id: "generarDialectica",
-    title: "Generar dialéctica para: '%s'", 
-    contexts: ["selection"]
-  });
-});
+if (typeof chrome !== 'undefined' && chrome.contextMenus) {
+    // Create a context menu for the extension
+    chrome.contextMenus.create({
+        id: "dialectica-369-synthesize",
+        title: "Synthesize with Hybrid Dialectic 369", // Title in English
+        contexts: ["selection"] // Appears only when text is selected
+    });
 
-// Escuchador del menú contextual
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "generarDialectica") {
-    const textoSeleccionado = info.selectionText;
-    
-    // Enviar el texto seleccionado al popup
-    // El popup.js contiene el listener que recibirá este mensaje.
-    chrome.runtime.sendMessage({
-      action: "textoSeleccionado",
-      texto: textoSeleccionado
-    });
-  }
-});
+    // Listen for context menu clicks
+    chrome.contextMenus.onClicked.addListener((info, tab) => {
+        if (info.menuItemId === "dialectica-369-synthesize" && info.selectionText) {
+            // Send the selected text to popup.js
+            chrome.runtime.sendMessage({
+                action: "textSelected", // Renamed action
+                texto: info.selectionText
+            });
+        }
+    });
+}
+
+// Listen for messages from content.js and forward them to popup.js (if open)
+if (typeof chrome !== 'undefined' && chrome.runtime) {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === "textSelected") { // Renamed action
+            // Forward to any open popup script (popup.js)
+            chrome.runtime.sendMessage(request);
+        }
+    });
+}
