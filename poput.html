@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dialéctica 369</title>
+  <title>Dialectic 369</title>
   <style>
     :root {
-      --chola: #FF6B35; /* Naranja Chola */
-      --malandra: #2EC4B6; /* Turquesa Malandra */
-      --fresa: #E71D36; /* Rojo Fresa */
-      --hybrida: #9D4EDD; /* Morado Hybrida */
-      --bg: #1A1A2E; /* Fondo Oscuro */
+      --chola: #FF6B35; /* Chola Orange */
+      --malandra: #2EC4B6; /* Malandra Turquoise */
+      --fresa: #E71D36; /* Fresa Red */
+      --hybrida: #9D4EDD; /* Hybrid Purple */
+      --bg: #1A1A2E; /* Dark Background */
       --text-light: rgba(255, 255, 255, 0.7);
       --text-dim: rgba(255, 255, 255, 0.5);
     }
@@ -91,16 +91,16 @@
       background: linear-gradient(45deg, var(--chola), var(--malandra));
       border: none;
       border-radius: 25px;
-      color: white; /* Cambiado a blanco para contraste */
+      color: white;
       padding: 12px 20px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5); /* Sombra añadida */
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
     
     .btn:hover:not(:disabled) {
-      transform: scale(1.05); /* Usando el hover que enviaste */
+      transform: scale(1.05);
       background: linear-gradient(45deg, var(--malandra), var(--fresa));
       box-shadow: 0 6px 12px rgba(0,0,0,0.7);
     }
@@ -119,7 +119,7 @@
       background: linear-gradient(45deg, var(--fresa), var(--hybrida));
     }
     
-    .resultado {
+    .result {
       background: rgba(255,255,255,0.05);
       border-radius: 12px;
       padding: 15px;
@@ -127,12 +127,12 @@
       border-left: 4px solid;
     }
     
-    .tesis { border-left-color: var(--chola); }
-    .antitesis { border-left-color: var(--fresa); } /* Usando Fresa para Antítesis, más dramático */
-    .sintesis { border-left-color: var(--malandra); }
-    .hibrida { border-left-color: var(--hybrida); }
+    .thesis { border-left-color: var(--chola); }
+    .antithesis { border-left-color: var(--fresa); }
+    .synthesis { border-left-color: var(--malandra); }
+    .hybrid { border-left-color: var(--hybrida); }
     
-    .etiqueta {
+    .tag {
       font-size: 0.8em;
       font-weight: bold;
       opacity: 0.8;
@@ -140,11 +140,11 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    .tesis .etiqueta { color: var(--chola); }
-    .antitesis .etiqueta { color: var(--fresa); }
-    .sintesis .etiqueta { color: var(--hybrida); }
+    .thesis .tag { color: var(--chola); }
+    .antithesis .tag { color: var(--fresa); }
+    .synthesis .tag { color: var(--hybrida); }
     
-    .contenido {
+    .content {
       font-size: 0.95em;
       line-height: 1.4;
       white-space: pre-wrap;
@@ -161,14 +161,14 @@
       display: none;
     }
 
-    .estado {
+    .status {
         text-align: center;
         font-size: 0.8em;
         color: var(--text-dim);
     }
     
-    /* Estilos del Historial */
-    .historial-title {
+    /* History Styles */
+    .history-title {
         cursor: pointer;
         padding: 10px;
         background: rgba(255, 255, 255, 0.1);
@@ -180,10 +180,10 @@
         align-items: center;
         transition: background 0.2s;
     }
-    .historial-title:hover {
+    .history-title:hover {
         background: rgba(255, 255, 255, 0.2);
     }
-    .historial-list {
+    .history-list {
         padding: 10px 0;
         display: flex;
         flex-direction: column;
@@ -191,7 +191,7 @@
         max-height: 300px;
         overflow-y: auto;
     }
-    .historial-item {
+    .history-item {
         background: rgba(255, 255, 255, 0.05);
         padding: 10px;
         border-radius: 6px;
@@ -199,15 +199,15 @@
         cursor: pointer;
         transition: background 0.2s;
     }
-    .historial-item:hover {
+    .history-item:hover {
         background: rgba(255, 255, 255, 0.1);
     }
-    .historial-item strong {
+    .history-item strong {
         color: var(--hybrida);
         display: block;
         margin-bottom: 5px;
     }
-    .historial-item small {
+    .history-item small {
         color: var(--text-dim);
         font-size: 0.75em;
     }
@@ -215,58 +215,58 @@
 </head>
 <body>
   <div class="container">
-    <div class="title">DIALÉCTICA HYBRIDA 369</div>
-    <div class="subtitle">Mecánica Inversa Creativa</div>
+    <div class="title">HYBRID DIALECTIC 369</div>
+    <div class="subtitle">Creative Inverse Mechanics</div>
     
     <div class="input-group">
-      <label for="temaInput">Tema o Concepto:</label>
-      <input type="text" id="temaInput" placeholder="Ej: identidad cultural, arte urbano, tecnología social...">
+      <label for="topicInput">Topic or Concept:</label>
+      <input type="text" id="topicInput" placeholder="Ex: cultural identity, urban art, social technology...">
     </div>
     
     <div class="style-selector">
       <div class="input-group">
-        <label for="estiloTesis">Estilo Tesis:</label>
-        <select id="estiloTesis">
-          <option value="chola">CHOLA (Raíz/Barrio)</option>
-          <option value="malandra">MALANDRA (Estrategia/Supervivencia)</option>
-          <option value="fresa">FRESA (Tecno/Refinado)</option>
-          <option value="hybrida">HYBRIDA (Fusión)</option>
+        <label for="thesisStyle">Thesis Style:</label>
+        <select id="thesisStyle">
+          <option value="chola">CHOLA (Root/Barrio)</option>
+          <option value="malandra">MALANDRA (Strategy/Survival)</option>
+          <option value="fresa">FRESA (Tech/Refined)</option>
+          <option value="hybrida">HYBRID (Fusion)</option>
         </select>
       </div>
       
       <div class="input-group">
-        <label for="estiloAntitesis">Estilo Antítesis:</label>
-        <select id="estiloAntitesis">
-          <option value="malandra">MALANDRA (Contra-poder)</option>
-          <option value="fresa">FRESA (Elite/Tecno)</option>
-          <option value="chola">CHOLA (Autenticidad)</option>
-          <option value="hybrida">HYBRIDA (Deconstrucción)</option>
+        <label for="antithesisStyle">Antithesis Style:</label>
+        <select id="antithesisStyle">
+          <option value="malandra">MALANDRA (Counter-power)</option>
+          <option value="fresa">FRESA (Elite/Tech)</option>
+          <option value="chola">CHOLA (Authenticity)</option>
+          <option value="hybrida">HYBRID (Deconstruction)</option>
         </select>
       </div>
     </div>
     
-    <button class="btn" id="generarBtn">GENERAR DIALÉCTICA 369</button>
-    <button class="btn btn-disrupt" id="disruptBtn">DISRUPCIÓN CREATIVA</button>
+    <button class="btn" id="generateBtn">GENERATE DIALECTIC 369</button>
+    <button class="btn btn-disrupt" id="disruptBtn">CREATIVE DISRUPTION</button>
     
     <div id="loading" class="loading hidden">
-      🔄 Generando síntesis híbrida...
+      🔄 Generating hybrid synthesis...
     </div>
     
-    <div id="resultados" class="hidden">
-        <!-- El contenido se inyecta dinámicamente por popup.js -->
+    <div id="results" class="hidden">
+        <!-- Content injected dynamically by popup.js -->
     </div>
     
-    <div class="estado" id="estado">
-      Conectando con la energía creativa...
+    <div class="status" id="status">
+      Connecting to creative energy...
     </div>
 
-    <!-- Sección de Historial -->
-    <div class="historial-title" id="historialTitle">
-        Historial Reciente 
+    <!-- History Section -->
+    <div class="history-title" id="historyTitle">
+        Recent History 
         <span>▼</span>
     </div>
-    <div id="historialList" class="historial-list">
-        <!-- Ítems del historial se inyectan aquí -->
+    <div id="historyList" class="history-list">
+        <!-- History items injected here -->
     </div>
 
   </div>
