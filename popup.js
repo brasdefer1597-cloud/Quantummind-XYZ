@@ -46,7 +46,7 @@ class DialecticaExtension {
   addMessageListener() {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
         chrome.runtime.onMessage.addListener((request) => {
-            if (request.action === "textoSeleccionado" && request.texto) {
+            if (request.action === "textSelected" && request.texto) {
                 document.getElementById('topicInput').value = request.texto;
                 document.getElementById('topicInput').focus();
                 this.updateStatus(`📝 Topic loaded from selection: "${request.texto.substring(0, 30)}..."`);
@@ -156,7 +156,12 @@ class DialecticaExtension {
       const thesisStyleName = STYLE_MAP[thesisStyleKey].name;
       const antithesisStyleName = STYLE_MAP[antithesisStyleKey].name;
 
-      const systemPrompt = `Act as the "Dialectical Trinity" (Chola, Malandra, Fresa). Your task is to perform a Hegelian analysis on the provided concept and return the result in a strict JSON format. 1. Thesis: Generate a foundational and strong argument (Thesis) on the concept, adopting the style of ${thesisStyleName}. 2. Antithesis: Generate a disruptive counter-argument (Antithesis) against the Thesis, adopting the style of ${antithesisStyleName}. 3. Synthesis: Find a new, superior path (Synthesis) that resolves the conflict between Thesis and Antithesis. Be concise and powerful.`;
+      // Note: According to the chalamandra_tech_map.md:
+      // CHOLA (ai.summarizer) -> Thesis
+      // MALANDRA (ai.proofreader) -> Antithesis
+      // FRESA (ai.writer) -> Synthesis
+      // This is simulated in the system prompt for the Gemini API call.
+      const systemPrompt = `Act as the "Dialectical Trinity" (Chola, Malandra, Fresa). Your task is to perform a Hegelian analysis on the provided concept and return the result in a strict JSON format. 1. Thesis: Generate a foundational and strong argument (Thesis) on the concept, adopting the style of ${thesisStyleName} (Root/Context Extraction). 2. Antithesis: Generate a disruptive counter-argument (Antithesis) against the Thesis, adopting the style of ${antithesisStyleName} (Critical Analysis/Proofread). 3. Synthesis: Find a new, superior path (Synthesis) that resolves the conflict between Thesis and Antithesis. Be concise and powerful, outputting only 1-2 paragraphs for each section.`;
       
       const userQuery = `Perform a dialectical analysis on the topic: "${topic}".`;
 
@@ -177,6 +182,7 @@ class DialecticaExtension {
    * Logic for creative disruption.
    */
   async performDisruption(topic) {
+      // Note: MALANDRA (Disruption / Critique) is the associated personality.
       const systemPrompt = `You are the Creative Disruption Engine (MALANDRA QuantumMind). Your sole task is to take a concept or idea and radically transform it or present it from a completely unexpected and subversive perspective. Return the result in a strict JSON format. The new disruptive concept must be radical.`;
       
       const userQuery = `Apply a Level 9 creative disruption to the topic: "${topic}".`;
@@ -192,7 +198,7 @@ class DialecticaExtension {
 
       const result = await this.callGeminiApi(systemPrompt, userQuery, schema);
       // Map keys to expected display format
-      return { original: topic, disruptive: result.disruptiveConcept };
+      return { thesis: `Original Topic: ${topic}`, antithesis: "DISRUPTION ACTIVATED (MALANDRA)", synthesis: result.disruptiveConcept };
   }
 
 
@@ -223,7 +229,7 @@ class DialecticaExtension {
         <div class="tag">CREATIVE DISRUPTION LEVEL 9 (MALANDRA)</div>
         <div class="content">
           <strong>Base Topic:</strong> ${originalTopic || ''}<br><br>
-          <strong>Disruptive Concept:</strong> ${data.disruptive || ''}
+          <strong>Disruptive Concept:</strong> ${data.synthesis || ''}
         </div>
       </div>
     `;
@@ -315,6 +321,7 @@ class DialecticaExtension {
     }
 
     history.forEach((item, index) => {
+        // Use the correct keys from the result JSON structure (thesis, antithesis, synthesis)
         if (!item.synthesis) return; 
 
         const date = new Date(item.timestamp).toLocaleTimeString();
@@ -341,15 +348,15 @@ class DialecticaExtension {
       document.getElementById('results').innerHTML = `
         <div class="result thesis">
             <div class="tag">THESIS (${item.thesisStyle})</div>
-            <div class="content">${item.tesis || ''}</div>
+            <div class="content">${item.thesis || ''}</div>
         </div>
         <div class="result antithesis">
             <div class="tag">ANTITHESIS (${item.antithesisStyle})</div>
-            <div class="content">${item.antitesis || ''}</div>
+            <div class="content">${item.antithesis || ''}</div>
         </div>
         <div class="result synthesis hybrid">
             <div class="tag">HYBRID SYNTHESIS 369 (Reloaded)</div>
-            <div class="content">${item.sintesis || ''}</div>
+            <div class="content">${item.synthesis || ''}</div>
         </div>
       `;
       document.getElementById('results').classList.remove('hidden');
@@ -361,3 +368,4 @@ class DialecticaExtension {
 document.addEventListener('DOMContentLoaded', () => {
   new DialecticaExtension();
 });
+
