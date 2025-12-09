@@ -1,14 +1,14 @@
-// Variables de configuración de la API y el modelo
-const API_KEY = ""; // La clave de la API se proporcionará en tiempo de ejecución en el entorno.
+// API and model configuration variables
+const API_KEY = ""; // API key will be provided at runtime in the environment.
 const API_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
 const MODEL = 'gemini-2.5-flash-preview-09-2025';
 
-// Base de datos de estilos y utilidades para la visualización.
+// Style database and utilities for visualization.
 const STYLE_MAP = {
-    'chola': { name: 'CHOLA (Raíz/Barrio)' },
-    'malandra': { name: 'MALANDRA (Estrategia/Supervivencia)' },
-    'fresa': { name: 'FRESA (Tecno/Refinado)' },
-    'hybrida': { name: 'HYBRIDA (Fusión)' },
+    'chola': { name: 'CHOLA (Root/Barrio)' },
+    'malandra': { name: 'MALANDRA (Strategy/Survival)' },
+    'fresa': { name: 'FRESA (Tech/Refined)' },
+    'hybrida': { name: 'HYBRID (Fusion)' },
 };
 
 class DialecticaExtension {
@@ -19,27 +19,27 @@ class DialecticaExtension {
   init() {
     this.bindEvents();
     this.addMessageListener();
-    this.cargarHistorial(); 
-    this.actualizarEstado('✅ Extensión cargada. Lista para el análisis dialéctico.');
+    this.loadHistory(); 
+    this.updateStatus('✅ Extension loaded. Ready for dialectical analysis.');
   }
 
   bindEvents() {
-    document.getElementById('generarBtn').addEventListener('click', () => {
-      this.generarDialectica(false);
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      this.generateDialectic(false);
     });
 
     document.getElementById('disruptBtn').addEventListener('click', () => {
-      this.generarDialectica(true); // Flag para disrupción
+      this.generateDialectic(true); // Flag for disruption
     });
 
-    document.getElementById('temaInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') this.generarDialectica(false);
+    document.getElementById('topicInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') this.generateDialectic(false);
     });
 
-    document.getElementById('historialTitle').addEventListener('click', () => {
-        document.getElementById('historialList').classList.toggle('hidden');
-        const span = document.querySelector('#historialTitle span');
-        span.textContent = document.getElementById('historialList').classList.contains('hidden') ? '▼' : '▲';
+    document.getElementById('historyTitle').addEventListener('click', () => {
+        document.getElementById('historyList').classList.toggle('hidden');
+        const span = document.querySelector('#historyTitle span');
+        span.textContent = document.getElementById('historyList').classList.contains('hidden') ? '▼' : '▲';
     });
   }
 
@@ -47,16 +47,16 @@ class DialecticaExtension {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
         chrome.runtime.onMessage.addListener((request) => {
             if (request.action === "textoSeleccionado" && request.texto) {
-                document.getElementById('temaInput').value = request.texto;
-                document.getElementById('temaInput').focus();
-                this.actualizarEstado(`📝 Tema cargado desde la selección: "${request.texto.substring(0, 30)}..."`);
+                document.getElementById('topicInput').value = request.texto;
+                document.getElementById('topicInput').focus();
+                this.updateStatus(`📝 Topic loaded from selection: "${request.texto.substring(0, 30)}..."`);
             }
         });
     }
   }
 
   /**
-   * Implementa la lógica de reintento con retroceso exponencial.
+   * Implements exponential backoff retry logic.
    */
   async fetchWithRetry(url, options, retries = 3) {
       for (let i = 0; i < retries; i++) {
@@ -67,9 +67,8 @@ class DialecticaExtension {
               const errorText = await response.text();
               console.error(`Attempt ${i + 1} failed with status ${response.status}: ${errorText}`);
 
-              // Si el error es 400, 401, etc., no tiene sentido reintentar.
               if (response.status < 500) {
-                  throw new Error(`Error en la solicitud (código ${response.status}).`);
+                  throw new Error(`Request error (code ${response.status}).`);
               }
               
           } catch (error) {
@@ -78,11 +77,11 @@ class DialecticaExtension {
               await new Promise(resolve => setTimeout(resolve, delay));
           }
       }
-      throw new Error('La solicitud falló después de múltiples reintentos.');
+      throw new Error('Request failed after multiple retries.');
   }
 
   /**
-   * Llama a la API de Gemini para generar la dialéctica.
+   * Calls the Gemini API for content generation.
    */
   async callGeminiApi(systemPrompt, userQuery, responseSchema) {
       const url = `${API_URL_BASE}${MODEL}:generateContent?key=${API_KEY}`;
@@ -109,256 +108,256 @@ class DialecticaExtension {
               const jsonText = result.candidates[0].content.parts[0].text;
               return JSON.parse(jsonText);
           } catch (e) {
-              console.error("Error al parsear la respuesta JSON:", e, result);
-              throw new Error("La IA devolvió un formato incorrecto.");
+              console.error("Error parsing JSON response:", e, result);
+              throw new Error("AI returned an incorrect format.");
           }
       } else {
-          const errorMessage = result.error?.message || 'Respuesta de la API incompleta o fallida.';
+          const errorMessage = result.error?.message || 'Incomplete or failed API response.';
           throw new Error(errorMessage);
       }
   }
 
   /**
-   * Define la lógica de generación principal.
+   * Main generation logic function.
    */
-  async generarDialectica(isDisruptive) {
-    const tema = document.getElementById('temaInput').value.trim();
-    const estiloTesis = document.getElementById('estiloTesis').value;
-    const estiloAntitesis = document.getElementById('estiloAntitesis').value;
+  async generateDialectic(isDisruptive) {
+    const topic = document.getElementById('topicInput').value.trim();
+    const thesisStyle = document.getElementById('thesisStyle').value;
+    const antithesisStyle = document.getElementById('antithesisStyle').value;
 
-    if (!tema) {
-      this.mostrarError('¡Escribe un tema para la dialéctica!');
+    if (!topic) {
+      this.showError('Please enter a topic for the dialectic!');
       return;
     }
 
-    this.mostrarLoading(true, isDisruptive);
+    this.showLoading(true, isDisruptive);
 
     try {
         let result;
         if (isDisruptive) {
-            result = await this.performDisruption(tema);
-            this.mostrarDisrupcion(result, tema);
+            result = await this.performDisruption(topic);
+            this.showDisruption(result, topic);
         } else {
-            result = await this.performDialecticalSynthesis(tema, estiloTesis, estiloAntitesis);
-            this.mostrarResultado(result, estiloTesis, estiloAntitesis);
-            this.guardarEnHistorial(result, tema, estiloTesis, estiloAntitesis);
+            result = await this.performDialecticalSynthesis(topic, thesisStyle, antithesisStyle);
+            this.showResult(result, thesisStyle, antithesisStyle);
+            this.saveToHistory(result, topic, thesisStyle, antithesisStyle);
         }
     } catch (error) {
-      this.mostrarError(`Error creativo: ${error.message}`);
+      this.showError(`Creative Error: ${error.message}`);
     } finally {
-      this.mostrarLoading(false);
+      this.showLoading(false);
     }
   }
 
   /**
-   * Lógica para la síntesis dialéctica (Tesis, Antítesis, Síntesis).
+   * Logic for dialectical synthesis (Thesis, Antithesis, Synthesis).
    */
-  async performDialecticalSynthesis(tema, estiloTesis, estiloAntitesis) {
-      const systemPrompt = `Actúa como la "Dialectical Trinity" (Chola, Malandra, Fresa). Tu tarea es realizar un análisis Hegeliano sobre el concepto proporcionado y devolver el resultado en un formato JSON estricto. 1. Tesis (CHOLA): Genera un argumento fundacional y fuerte (Tesis) sobre el concepto, adoptando el estilo de ${STYLE_MAP[estiloTesis].name}. 2. Antítesis (MALANDRA): Genera un contra-argumento disruptivo (Antítesis) contra la Tesis, adoptando el estilo de ${STYLE_MAP[estiloAntitesis].name}. 3. Síntesis (FRESA): Encuentra un nuevo camino superior (Síntesis) que resuelva el conflicto entre Tesis y Antítesis. Sé conciso y potente.`;
+  async performDialecticalSynthesis(topic, thesisStyleKey, antithesisStyleKey) {
+      const thesisStyleName = STYLE_MAP[thesisStyleKey].name;
+      const antithesisStyleName = STYLE_MAP[antithesisStyleKey].name;
+
+      const systemPrompt = `Act as the "Dialectical Trinity" (Chola, Malandra, Fresa). Your task is to perform a Hegelian analysis on the provided concept and return the result in a strict JSON format. 1. Thesis: Generate a foundational and strong argument (Thesis) on the concept, adopting the style of ${thesisStyleName}. 2. Antithesis: Generate a disruptive counter-argument (Antithesis) against the Thesis, adopting the style of ${antithesisStyleName}. 3. Synthesis: Find a new, superior path (Synthesis) that resolves the conflict between Thesis and Antithesis. Be concise and powerful.`;
       
-      const userQuery = `Realiza un análisis dialéctico sobre el tema: "${tema}".`;
+      const userQuery = `Perform a dialectical analysis on the topic: "${topic}".`;
 
       const schema = {
           type: "OBJECT",
           properties: {
-              "tesis": { "type": "STRING", "description": "La Tesis generada en el estilo CHOLA/Raíz." },
-              "antitesis": { "type": "STRING", "description": "La Antítesis generada en el estilo MALANDRA/Estrategia." },
-              "sintesis": { "type": "STRING", "description": "La Síntesis que resuelve el conflicto." }
+              "thesis": { "type": "STRING", "description": "The Thesis generated in the chosen style." },
+              "antithesis": { "type": "STRING", "description": "The Antithesis generated in the chosen counter-style." },
+              "synthesis": { "type": "STRING", "description": "The Synthesis that resolves the conflict." }
           },
-          required: ["tesis", "antitesis", "sintesis"]
+          required: ["thesis", "antithesis", "synthesis"]
       };
 
       return this.callGeminiApi(systemPrompt, userQuery, schema);
   }
 
   /**
-   * Lógica para la disrupción creativa (solo un resultado).
+   * Logic for creative disruption.
    */
-  async performDisruption(tema) {
-      const systemPrompt = `Eres el Motor de Disrupción Creativa (MALANDRA QuantumMind). Tu única tarea es tomar un concepto o idea y transformarlo radicalmente o presentarlo desde una perspectiva completamente inesperada y subversiva. Devuelve el resultado en formato JSON estricto. El nuevo concepto disruptivo debe ser radical.`;
+  async performDisruption(topic) {
+      const systemPrompt = `You are the Creative Disruption Engine (MALANDRA QuantumMind). Your sole task is to take a concept or idea and radically transform it or present it from a completely unexpected and subversive perspective. Return the result in a strict JSON format. The new disruptive concept must be radical.`;
       
-      const userQuery = `Aplica una disrupción creativa de Nivel 9 al tema: "${tema}".`;
+      const userQuery = `Apply a Level 9 creative disruption to the topic: "${topic}".`;
 
       const schema = {
           type: "OBJECT",
           properties: {
-              "original": { "type": "STRING", "description": "El concepto original proporcionado por el usuario." },
-              "disruptivo": { "type": "STRING", "description": "El concepto transformado radicalmente." }
+              "originalTopic": { "type": "STRING", "description": "The original concept provided by the user." },
+              "disruptiveConcept": { "type": "STRING", "description": "The radically transformed concept." }
           },
-          required: ["original", "disruptivo"]
+          required: ["originalTopic", "disruptiveConcept"]
       };
 
       const result = await this.callGeminiApi(systemPrompt, userQuery, schema);
-      // Asignar el tema original al resultado para el display
-      return { original: tema, disruptivo: result.disruptivo };
+      // Map keys to expected display format
+      return { original: topic, disruptive: result.disruptiveConcept };
   }
 
 
-  mostrarResultado(data, tesisKey, antitesisKey) {
-    document.getElementById('resultados').innerHTML = `
-        <div class="resultado tesis">
-            <div class="etiqueta">TESIS (${STYLE_MAP[tesisKey].name})</div>
-            <div class="contenido" id="tesisContent">${data.tesis || ''}</div>
+  showResult(data, thesisKey, antithesisKey) {
+    document.getElementById('results').innerHTML = `
+        <div class="result thesis">
+            <div class="tag">THESIS (${STYLE_MAP[thesisKey].name})</div>
+            <div class="content" id="thesisContent">${data.thesis || ''}</div>
         </div>
-        <div class="resultado antitesis">
-            <div class="etiqueta">ANTÍTESIS (${STYLE_MAP[antitesisKey].name})</div>
-            <div class="contenido" id="antitesisContent">${data.antitesis || ''}</div>
+        <div class="result antithesis">
+            <div class="tag">ANTITHESIS (${STYLE_MAP[antithesisKey].name})</div>
+            <div class="content" id="antithesisContent">${data.antithesis || ''}</div>
         </div>
-        <div class="resultado sintesis hibrida">
-            <div class="etiqueta">SÍNTESIS 369 HYBRIDA</div>
-            <div class="contenido" id="sintesisContent">${data.sintesis || ''}</div>
+        <div class="result synthesis hybrid">
+            <div class="tag">HYBRID SYNTHESIS 369</div>
+            <div class="content" id="synthesisContent">${data.synthesis || ''}</div>
         </div>
     `;
 
-    document.getElementById('resultados').classList.remove('hidden');
-    this.animarResultados();
-    this.actualizarEstado(`🌀 Síntesis generada - Nivel de Confianza: ALTO`);
+    document.getElementById('results').classList.remove('hidden');
+    this.animateResults();
+    this.updateStatus(`🌀 Synthesis generated - Confidence Level: HIGH`);
   }
 
-  mostrarDisrupcion(data, temaOriginal) {
-    const resultadoHTML = `
-      <div class="resultado hibrida">
-        <div class="etiqueta">DISRUPCIÓN CREATIVA NIVEL 9 (MALANDRA)</div>
-        <div class="contenido">
-          <strong>Tema Base:</strong> ${temaOriginal || ''}<br><br>
-          <strong>Concepto Disruptivo:</strong> ${data.disruptivo || ''}
+  showDisruption(data, originalTopic) {
+    const resultHTML = `
+      <div class="result hybrid">
+        <div class="tag">CREATIVE DISRUPTION LEVEL 9 (MALANDRA)</div>
+        <div class="content">
+          <strong>Base Topic:</strong> ${originalTopic || ''}<br><br>
+          <strong>Disruptive Concept:</strong> ${data.disruptive || ''}
         </div>
       </div>
     `;
     
-    document.getElementById('resultados').innerHTML = resultadoHTML;
-    document.getElementById('resultados').classList.remove('hidden');
+    document.getElementById('results').innerHTML = resultHTML;
+    document.getElementById('results').classList.remove('hidden');
 
-    this.animarResultados();
-    this.actualizarEstado(`💥 Disrupción aplicada. ¡El caos organizado ha generado una idea!`);
+    this.animateResults();
+    this.updateStatus(`💥 Disruption applied. Organized chaos has generated an idea!`);
   }
 
-  animarResultados() {
-    const resultados = document.getElementById('resultados');
-    resultados.style.opacity = '0';
-    resultados.style.transform = 'translateY(20px)';
+  animateResults() {
+    const results = document.getElementById('results');
+    results.style.opacity = '0';
+    results.style.transform = 'translateY(20px)';
     
     setTimeout(() => {
-      resultados.style.transition = 'all 0.5s ease';
-      resultados.style.opacity = '1';
-      resultados.style.transform = 'translateY(0)';
+      results.style.transition = 'all 0.5s ease';
+      results.style.opacity = '1';
+      results.style.transform = 'translateY(0)';
     }, 100);
   }
 
-  mostrarLoading(mostrar, isDisruptive = false) {
+  showLoading(show, isDisruptive = false) {
     const loading = document.getElementById('loading');
-    const btns = [document.getElementById('generarBtn'), document.getElementById('disruptBtn')];
-    loading.textContent = isDisruptive 
-        ? '💥 Aplicando Disrupción Nivel 9...'
-        : '🔄 Generando síntesis híbrida...';
+    const btns = [document.getElementById('generateBtn'), document.getElementById('disruptBtn')];
+    loading.textContent = show && isDisruptive
+        ? '💥 Applying Level 9 Disruption...'
+        : '🔄 Generating hybrid synthesis...';
 
-    loading.classList.toggle('hidden', !mostrar);
-    btns.forEach(btn => btn.disabled = mostrar);
+    loading.classList.toggle('hidden', !show);
+    btns.forEach(btn => btn.disabled = show);
   }
 
-  mostrarError(mensaje) {
-    const estadoDiv = document.getElementById('estado');
-    estadoDiv.textContent = `❌ ${mensaje}`;
-    estadoDiv.style.color = 'var(--fresa)'; 
+  showError(message) {
+    const statusDiv = document.getElementById('status');
+    statusDiv.textContent = `❌ ${message}`;
+    statusDiv.style.color = 'var(--fresa)'; 
     setTimeout(() => {
-        estadoDiv.style.color = 'var(--text-dim)';
+        statusDiv.style.color = 'var(--text-dim)';
     }, 5000);
   }
 
-  actualizarEstado(mensaje) {
-    document.getElementById('estado').textContent = mensaje;
+  updateStatus(message) {
+    document.getElementById('status').textContent = message;
   }
 
-  // Historial: Guardar
-  guardarEnHistorial(data, tema, estiloTesis, estiloAntitesis) {
+  // History: Save
+  saveToHistory(data, topic, thesisStyle, antithesisStyle) {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get('dialectica_historial', (result) => {
-            const historial = result.dialectica_historial || [];
-            historial.unshift({ 
+        chrome.storage.local.get('dialectica_history', (result) => {
+            const history = result.dialectica_history || [];
+            history.unshift({ 
                 ...data, 
-                tema: tema,
-                estiloTesis: STYLE_MAP[estiloTesis].name,
-                estiloAntitesis: STYLE_MAP[estiloAntitesis].name,
+                topic: topic,
+                thesisStyle: STYLE_MAP[thesisStyle].name,
+                antithesisStyle: STYLE_MAP[antithesisStyle].name,
                 timestamp: Date.now() 
             });
             
-            if (historial.length > 10) historial.pop();
+            if (history.length > 10) history.pop();
             
-            chrome.storage.local.set({ 'dialectica_historial': historial }, () => {
-                this.mostrarHistorial(historial); 
+            chrome.storage.local.set({ 'dialectica_history': history }, () => {
+                this.showHistory(history); 
             });
         });
     }
   }
 
-  // Historial: Cargar y renderizar
-  cargarHistorial() {
+  // History: Load and render
+  loadHistory() {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get('dialectica_historial', (result) => {
-            const historial = result.dialectica_historial || [];
-            this.mostrarHistorial(historial);
+        chrome.storage.local.get('dialectica_history', (result) => {
+            const history = result.dialectica_history || [];
+            this.showHistory(history);
         });
     }
   }
 
-  // Historial: Renderizar el HTML
-  mostrarHistorial(historial) {
-    const listDiv = document.getElementById('historialList');
+  // History: Render HTML
+  showHistory(history) {
+    const listDiv = document.getElementById('historyList');
     listDiv.innerHTML = ''; 
     
-    if (historial.length === 0) {
-        listDiv.innerHTML = '<div style="color: var(--text-dim); text-align: center; padding: 10px;">Aún no hay síntesis en el historial.</div>';
+    if (history.length === 0) {
+        listDiv.innerHTML = '<div style="color: var(--text-dim); text-align: center; padding: 10px;">No synthesis history yet.</div>';
         listDiv.classList.remove('hidden'); 
         return;
     }
 
-    historial.forEach((item, index) => {
-        // Asegurarse de que el historial tenga síntesis para mostrar
-        if (!item.sintesis) return; 
+    history.forEach((item, index) => {
+        if (!item.synthesis) return; 
 
         const date = new Date(item.timestamp).toLocaleTimeString();
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'historial-item';
-        // Usamos un índice temporal ya que no hay ID de base de datos
+        itemDiv.className = 'history-item';
         itemDiv.dataset.index = index; 
         itemDiv.innerHTML = `
-            <strong>${item.tema}</strong>
-            <p style="margin: 0;">${item.sintesis.substring(0, 80)}...</p>
-            <small>(${item.estiloTesis} vs ${item.estiloAntitesis}) - ${date}</small>
+            <strong>${item.topic}</strong>
+            <p style="margin: 0;">${item.synthesis.substring(0, 80)}...</p>
+            <small>(${item.thesisStyle} vs ${item.antithesisStyle}) - ${date}</small>
         `;
-        // Re-cargar la síntesis al hacer click
-        itemDiv.addEventListener('click', () => this.recargarResultado(item));
+        itemDiv.addEventListener('click', () => this.reloadResult(item));
         listDiv.appendChild(itemDiv);
     });
 
     listDiv.classList.add('hidden');
-    document.querySelector('#historialTitle span').textContent = '▼';
+    document.querySelector('#historyTitle span').textContent = '▼';
   }
 
-  // Recargar un resultado del historial a la vista principal
-  recargarResultado(item) {
-      this.actualizarEstado(`✨ Recargando historial para: ${item.tema}`);
-      document.getElementById('temaInput').value = item.tema;
-      document.getElementById('resultados').innerHTML = `
-        <div class="resultado tesis">
-            <div class="etiqueta">TESIS (${item.estiloTesis})</div>
-            <div class="contenido">${item.tesis || ''}</div>
+  // Reload a result from history to the main view
+  reloadResult(item) {
+      this.updateStatus(`✨ Reloading history for: ${item.topic}`);
+      document.getElementById('topicInput').value = item.topic;
+      document.getElementById('results').innerHTML = `
+        <div class="result thesis">
+            <div class="tag">THESIS (${item.thesisStyle})</div>
+            <div class="content">${item.tesis || ''}</div>
         </div>
-        <div class="resultado antitesis">
-            <div class="etiqueta">ANTÍTESIS (${item.estiloAntitesis})</div>
-            <div class="contenido">${item.antitesis || ''}</div>
+        <div class="result antithesis">
+            <div class="tag">ANTITHESIS (${item.antithesisStyle})</div>
+            <div class="content">${item.antitesis || ''}</div>
         </div>
-        <div class="resultado sintesis hibrida">
-            <div class="etiqueta">SÍNTESIS 369 HYBRIDA (Recargada)</div>
-            <div class="contenido">${item.sintesis || ''}</div>
+        <div class="result synthesis hybrid">
+            <div class="tag">HYBRID SYNTHESIS 369 (Reloaded)</div>
+            <div class="content">${item.sintesis || ''}</div>
         </div>
       `;
-      document.getElementById('resultados').classList.remove('hidden');
-      this.animarResultados();
+      document.getElementById('results').classList.remove('hidden');
+      this.animateResults();
   }
 }
 
-// Inicializar cuando el DOM esté listo
+// Initialize when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   new DialecticaExtension();
 });
