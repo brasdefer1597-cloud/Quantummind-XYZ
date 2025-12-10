@@ -1,7 +1,8 @@
 // --- CONFIGURACIÓN Y CONSTANTES ---
 const API_URL_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
 const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
-const API_KEY_STORAGE_KEY = 'dialectric_gemini_api_key';
+// La clave API se establece como una cadena vacía para que el entorno la inyecte.
+const API_KEY = ""; 
 const MAX_HISTORY_ITEMS = 5;
 
 // Definiciones de Personas (Agentes)
@@ -18,7 +19,6 @@ const AGENT_PERSONAS = {
 
 // --- REFERENCIAS DOM ---
 const topicInput = document.getElementById('topicInput');
-const apiKeyInput = document.getElementById('api-key-input');
 const thesisStyleSelect = document.getElementById('thesisStyle');
 const antithesisStyleSelect = document.getElementById('antithesisStyle');
 const generateBtn = document.getElementById('generateBtn');
@@ -57,26 +57,14 @@ async function fetchWithBackoff(url, options, retries = 0) {
     }
 }
 
-/**
- * Carga y guarda la clave API.
- */
-function loadApiKey() {
-    const key = localStorage.getItem(API_KEY_STORAGE_KEY) || '';
-    apiKeyInput.value = key;
-    return key;
-}
-
-function saveApiKey(key) {
-    localStorage.setItem(API_KEY_STORAGE_KEY, key);
-}
-
 // --- CORE API HANDLER ---
 
 /**
  * Llama a la API de Gemini para un solo paso.
  */
-async function callGemini(systemPrompt, userQuery, useGrounding, apiKey) {
-    const apiUrl = `${API_URL_BASE}${MODEL_NAME}:generateContent?key=${apiKey}`;
+async function callGemini(systemPrompt, userQuery, useGrounding) {
+    // Usamos API_KEY constante vacía; el entorno la llenará.
+    const apiUrl = `${API_URL_BASE}${MODEL_NAME}:generateContent?key=${API_KEY}`; 
 
     const payload = {
         contents: [{ parts: [{ text: userQuery }] }],
@@ -126,14 +114,13 @@ async function callGemini(systemPrompt, userQuery, useGrounding, apiKey) {
  * @param {'full'|'disrupt'} mode Tipo de análisis.
  */
 async function handleAnalysis(mode) {
-    const apiKey = apiKeyInput.value.trim();
     const analysisText = topicInput.value.trim();
     const thesisAgent = thesisStyleSelect.value;
     const antithesisAgent = antithesisStyleSelect.value;
     
     // Validaciones iniciales
-    if (!apiKey || !analysisText || analysisText.length < 10) {
-        displayError("Por favor, ingrese una clave API válida y al menos 10 caracteres para el análisis.");
+    if (analysisText.length < 10) {
+        displayError("Por favor, ingrese al menos 10 caracteres para el análisis.");
         return;
     }
     if (mode === 'full' && thesisAgent === antithesisAgent) {
@@ -147,9 +134,9 @@ async function handleAnalysis(mode) {
     
     try {
         if (mode === 'full') {
-            await runDialecticSynthesis(apiKey, analysisText, thesisAgent, antithesisAgent);
+            await runDialecticSynthesis(analysisText, thesisAgent, antithesisAgent);
         } else if (mode === 'disrupt') {
-            await runCreativeDisruption(apiKey, analysisText, thesisAgent);
+            await runCreativeDisruption(analysisText, thesisAgent);
         }
     } catch (error) {
         console.error("Analysis Error:", error);
@@ -162,14 +149,14 @@ async function handleAnalysis(mode) {
 /**
  * Ejecuta el proceso completo de Tesis-Antítesis-Síntesis.
  */
-async function runDialecticSynthesis(apiKey, analysisText, thesisAgent, antithesisAgent) {
+async function runDialecticSynthesis(analysisText, thesisAgent, antithesisAgent) {
     
     // --- STEP 1: GENERATE THESIS ---
     const thesisLabel = `TESIS (${thesisAgent})`;
     const thesisSystemPrompt = AGENT_PERSONAS[thesisAgent];
     appendResultCard('chola', `<p class="text-white/50">Analizando con la perspectiva ${thesisAgent}...</p>`, thesisLabel, null, 'thesis');
     
-    const thesisResult = await callGemini(thesisSystemPrompt, `Analiza el siguiente tema/texto: "${analysisText}"`, false, apiKey);
+    const thesisResult = await callGemini(thesisSystemPrompt, `Analiza el siguiente tema/texto: "${analysisText}"`, false);
     
     // Reemplazar la tarjeta de carga con el resultado real
     resultsDiv.querySelector('.thesis .content').textContent = thesisResult.text;
@@ -179,7 +166,7 @@ async function runDialecticSynthesis(apiKey, analysisText, thesisAgent, antithes
     const antithesisSystemPrompt = AGENT_PERSONAS[antithesisAgent];
     appendResultCard('fresa', `<p class="text-white/50">Contra-analizando con la perspectiva ${antithesisAgent}...</p>`, antithesisLabel, null, 'antithesis');
     
-    const antithesisResult = await callGemini(antithesisSystemPrompt, `Analiza el siguiente tema/texto: "${analysisText}"`, false, apiKey);
+    const antithesisResult = await callGemini(antithesisSystemPrompt, `Analiza el siguiente tema/texto: "${analysisText}"`, false);
     
     resultsDiv.querySelector('.antithesis .content').textContent = antithesisResult.text;
 
@@ -200,8 +187,7 @@ async function runDialecticSynthesis(apiKey, analysisText, thesisAgent, antithes
     const synthesisResult = await callGemini(
         "Eres el motor 'SÍNTESIS 369'. Tu tarea es resolver las tensiones dialécticas y proporcionar el resumen de más alto nivel.",
         synthesisPrompt,
-        true, // Usar Google Search grounding para la síntesis
-        apiKey
+        true // Usar Google Search grounding para la síntesis
     );
     
     // Actualizar Síntesis UI
@@ -227,7 +213,7 @@ async function runDialecticSynthesis(apiKey, analysisText, thesisAgent, antithes
 /**
  * Ejecuta el modo de Disrupción Creativa (Tesis vs. Tesis Híbrida).
  */
-async function runCreativeDisruption(apiKey, analysisText, thesisAgent) {
+async function runCreativeDisruption(analysisText, thesisAgent) {
     const hybridAgent = 'HYBRIDA'; // Fusión conceptual
     
     // --- STEP 1: GENERATE ORIGINAL THESIS ---
@@ -235,7 +221,7 @@ async function runCreativeDisruption(apiKey, analysisText, thesisAgent) {
     const originalSystemPrompt = AGENT_PERSONAS[thesisAgent];
     appendResultCard(thesisAgent.toLowerCase(), `<p class="text-white/50">Generando Tesis Base...</p>`, originalLabel, null, 'original');
     
-    const originalResult = await callGemini(originalSystemPrompt, `Analiza el siguiente tema/texto: "${analysisText}"`, false, apiKey);
+    const originalResult = await callGemini(originalSystemPrompt, `Analiza el siguiente tema/texto: "${analysisText}"`, false);
     resultsDiv.querySelector('.original .content').textContent = originalResult.text;
 
     // --- STEP 2: GENERATE HYBRID DISRUPTION ---
@@ -251,7 +237,7 @@ async function runCreativeDisruption(apiKey, analysisText, thesisAgent) {
         Basándote en la Tesis Original, invierte su premisa clave y genera una Disrupción Creativa que fusione elementos opuestos del tema.
     `;
 
-    const disruptionResult = await callGemini(disruptionSystemPrompt, disruptionPrompt, false, apiKey);
+    const disruptionResult = await callGemini(disruptionSystemPrompt, disruptionPrompt, false);
 
     // Update Disruption UI
     resultsDiv.querySelector('.hybrid .content').textContent = disruptionResult.text;
@@ -319,7 +305,6 @@ function setLoadingState(isLoading, mode) {
 
     generateBtn.disabled = isLoading;
     disruptBtn.disabled = isLoading;
-    apiKeyInput.disabled = isLoading;
     topicInput.disabled = isLoading;
     thesisStyleSelect.disabled = isLoading;
     antithesisStyleSelect.disabled = isLoading;
@@ -340,16 +325,13 @@ function setLoadingState(isLoading, mode) {
  * Habilita o deshabilita los botones basado en la entrada.
  */
 function checkInputs() {
-    const apiKey = apiKeyInput.value.trim();
     const analysisText = topicInput.value.trim();
     const textValid = analysisText.length >= 10;
     
-    generateBtn.disabled = !(apiKey && textValid);
-    disruptBtn.disabled = !(apiKey && textValid);
+    generateBtn.disabled = !textValid;
+    disruptBtn.disabled = !textValid;
     
-    if (!apiKey) {
-        statusDiv.textContent = "Esperando clave API...";
-    } else if (!textValid) {
+    if (!textValid) {
         statusDiv.textContent = "Ingrese al menos 10 caracteres para el análisis.";
     } else {
         statusDiv.textContent = "Listo para conectar con la energía creativa.";
@@ -478,14 +460,7 @@ function displayHistoryResults(data, mode, thesisAgent, antithesisAgent) {
 document.addEventListener('DOMContentLoaded', initializePopup);
 
 function initializePopup() {
-    // 1. Cargar clave API y configurar listeners
-    loadApiKey();
-    apiKeyInput.addEventListener('input', (e) => {
-        saveApiKey(e.target.value.trim());
-        checkInputs();
-    });
-
-    // 2. Configurar Listeners de input y botones
+    // 1. Configurar Listeners de input y botones
     topicInput.addEventListener('input', checkInputs);
     thesisStyleSelect.addEventListener('change', checkInputs);
     antithesisStyleSelect.addEventListener('change', checkInputs);
@@ -493,10 +468,10 @@ function initializePopup() {
     generateBtn.addEventListener('click', () => handleAnalysis('full'));
     disruptBtn.addEventListener('click', () => handleAnalysis('disrupt'));
     
-    // 3. Configurar Historial
+    // 2. Configurar Historial
     historyTitle.addEventListener('click', toggleHistory);
     loadHistory();
     
-    // 4. Chequeo inicial
+    // 3. Chequeo inicial
     checkInputs();
 }
