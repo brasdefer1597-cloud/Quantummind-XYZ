@@ -1,277 +1,306 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dialectic 369</title>
-  <style>
-    :root {
-      --chola: #FF6B35; /* Chola Orange */
-      --malandra: #2EC4B6; /* Malandra Turquoise */
-      --fresa: #E71D36; /* Fresa Red */
-      --hybrida: #9D4EDD; /* Hybrid Purple */
-      --bg: #1A1A2E; /* Dark Background */
-      --text-light: rgba(255, 255, 255, 0.7);
-      --text-dim: rgba(255, 255, 255, 0.5);
-    }
-    
-    body {
-      width: 500px;
-      height: 600px;
-      background: var(--bg);
-      color: white;
-      font-family: 'Segoe UI', system-ui;
-      margin: 0;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    
-    .title {
-      text-align: center;
-      background: linear-gradient(45deg, var(--chola), var(--malandra), var(--fresa));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: bold;
-      font-size: 1.4em;
-      margin-bottom: 10px;
-    }
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dialectic 369</title>
+    <style>
+        :root {
+            --chola: #FF6B35; /* Chola Orange (Tesis) */
+            --malandra: #2EC4B6; /* Malandra Turquoise (Síntesis) */
+            --fresa: #E71D36; /* Fresa Red (Antítesis) */
+            --hybrida: #9D4EDD; /* Hybrid Purple (Disruption/Fusion) */
+            --bg: #1A1A2E; /* Dark Background */
+            --text-light: rgba(255, 255, 255, 0.7);
+            --text-dim: rgba(255, 255, 255, 0.5);
+        }
+        
+        body {
+            width: 500px;
+            height: 600px;
+            background: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', system-ui;
+            margin: 0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .title {
+            text-align: center;
+            background: linear-gradient(45deg, var(--chola), var(--malandra), var(--fresa));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
 
-    .subtitle {
-        text-align: center;
-        font-size: 0.9em;
-        color: var(--text-light);
-        margin-bottom: 10px;
-    }
-    
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+        .subtitle {
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-    .input-group label {
-        font-weight: 500;
-        font-size: 0.9em;
-        color: var(--hybrida);
-    }
-    
-    input, textarea, select {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 8px;
-      color: white;
-      padding: 10px;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    
-    input:focus, select:focus, textarea:focus {
-        border-color: var(--hybrida);
-    }
-    
-    textarea {
-      height: 80px;
-      resize: vertical;
-    }
-    
-    .style-selector {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    
-    .btn {
-      background: linear-gradient(45deg, var(--chola), var(--malandra));
-      border: none;
-      border-radius: 25px;
-      color: white;
-      padding: 12px 20px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    }
-    
-    .btn:hover:not(:disabled) {
-      transform: scale(1.05);
-      background: linear-gradient(45deg, var(--malandra), var(--fresa));
-      box-shadow: 0 6px 12px rgba(0,0,0,0.7);
-    }
-    .btn:active:not(:disabled) {
-      transform: scale(1.00);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
-    .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
-    
-    .btn-disrupt {
-      background: linear-gradient(45deg, var(--fresa), var(--hybrida));
-    }
-    
-    .result {
-      background: rgba(255,255,255,0.05);
-      border-radius: 12px;
-      padding: 15px;
-      margin-top: 10px;
-      border-left: 4px solid;
-    }
-    
-    .thesis { border-left-color: var(--chola); }
-    .antithesis { border-left-color: var(--fresa); }
-    .synthesis { border-left-color: var(--malandra); }
-    .hybrid { border-left-color: var(--hybrida); }
-    
-    .tag {
-      font-size: 0.8em;
-      font-weight: bold;
-      opacity: 0.8;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .thesis .tag { color: var(--chola); }
-    .antithesis .tag { color: var(--fresa); }
-    .synthesis .tag { color: var(--hybrida); }
-    
-    .content {
-      font-size: 0.95em;
-      line-height: 1.4;
-      white-space: pre-wrap;
-    }
-    
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: var(--malandra);
-      font-weight: 600;
-    }
-    
-    .hidden {
-      display: none;
-    }
+        .input-group label {
+            font-weight: 500;
+            font-size: 0.9em;
+            color: var(--hybrida);
+        }
+        
+        input, textarea, select {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: white;
+            padding: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--hybrida);
+        }
+        
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .style-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, var(--chola), var(--malandra));
+            border: none;
+            border-radius: 25px;
+            color: white;
+            padding: 12px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: scale(1.02);
+            background: linear-gradient(45deg, var(--malandra), var(--fresa));
+            box-shadow: 0 6px 12px rgba(0,0,0,0.7);
+        }
+        .btn:active:not(:disabled) {
+            transform: scale(1.00);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        .btn-disrupt {
+            background: linear-gradient(45deg, var(--fresa), var(--hybrida));
+        }
+        
+        .result {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 10px;
+            border-left: 4px solid;
+            transition: border-color 0.3s;
+        }
+        
+        .thesis { border-left-color: var(--chola); }
+        .antithesis { border-left-color: var(--fresa); }
+        .synthesis { border-left-color: var(--malandra); }
+        .hybrid { border-left-color: var(--hybrida); }
+        
+        .tag {
+            font-size: 0.8em;
+            font-weight: bold;
+            opacity: 0.8;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .chola .tag { color: var(--chola); }
+        .malandra .tag { color: var(--malandra); }
+        .fresa .tag { color: var(--fresa); }
+        .hybrida .tag { color: var(--hybrida); }
+        
+        .content {
+            font-size: 0.95em;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
 
-    .status {
-        text-align: center;
-        font-size: 0.8em;
-        color: var(--text-dim);
-    }
-    
-    /* History Styles */
-    .history-title {
-        cursor: pointer;
-        padding: 10px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        margin-top: 20px;
-        font-weight: bold;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: background 0.2s;
-    }
-    .history-title:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-    .history-list {
-        padding: 10px 0;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        max-height: 300px;
-        overflow-y: auto;
-    }
-    .history-item {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 10px;
-        border-radius: 6px;
-        border-left: 3px solid var(--malandra);
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .history-item:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-    .history-item strong {
-        color: var(--hybrida);
-        display: block;
-        margin-bottom: 5px;
-    }
-    .history-item small {
-        color: var(--text-dim);
-        font-size: 0.75em;
-    }
-  </style>
+        .content a {
+            color: var(--malandra);
+            text-decoration: underline;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--malandra);
+            font-weight: 600;
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 0.8em;
+            color: var(--text-dim);
+        }
+        
+        /* History Styles */
+        .history-title {
+            cursor: pointer;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+            user-select: none;
+        }
+        .history-title:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .history-list {
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid var(--malandra);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .history-item strong {
+            color: var(--hybrida);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .history-item small {
+            color: var(--text-dim);
+            font-size: 0.75em;
+            display: block;
+        }
+
+        /* API Key Input Styling */
+        .api-config {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .api-config label {
+            font-size: 0.8em;
+            color: var(--text-light);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="title">HYBRID DIALECTIC 369</div>
-    <div class="subtitle">Creative Inverse Mechanics</div>
-    
-    <div class="input-group">
-      <label for="topicInput">Topic or Concept:</label>
-      <input type="text" id="topicInput" placeholder="Ex: cultural identity, urban art, social technology...">
-    </div>
-    
-    <div class="style-selector">
-      <div class="input-group">
-        <label for="thesisStyle">Thesis Style:</label>
-        <select id="thesisStyle">
-          <option value="chola">CHOLA (Root/Barrio)</option>
-          <option value="malandra">MALANDRA (Strategy/Survival)</option>
-          <option value="fresa">FRESA (Tech/Refined)</option>
-          <option value="hybrida">HYBRID (Fusion)</option>
-        </select>
-      </div>
-      
-      <div class="input-group">
-        <label for="antithesisStyle">Antithesis Style:</label>
-        <select id="antithesisStyle">
-          <option value="malandra">MALANDRA (Counter-power)</option>
-          <option value="fresa">FRESA (Elite/Tech)</option>
-          <option value="chola">CHOLA (Authenticity)</option>
-          <option value="hybrida">HYBRID (Deconstruction)</option>
-        </select>
-      </div>
-    </div>
-    
-    <button class="btn" id="generateBtn">GENERATE DIALECTIC 369</button>
-    <button class="btn btn-disrupt" id="disruptBtn">CREATIVE DISRUPTION</button>
-    
-    <div id="loading" class="loading hidden">
-      🔄 Generating hybrid synthesis...
-    </div>
-    
-    <div id="results" class="hidden">
-        <!-- Content injected dynamically by popup.js -->
-    </div>
-    
-    <div class="status" id="status">
-      Connecting to creative energy...
-    </div>
+    <div class="container">
+        <div class="title">HYBRID DIALECTIC 369</div>
+        <div class="subtitle">Creative Inverse Mechanics</div>
 
-    <!-- History Section -->
-    <div class="history-title" id="historyTitle">
-        Recent History 
-        <span>▼</span>
+        <!-- API Key Input -->
+        <div class="api-config">
+            <label for="api-key-input">Clave API de Gemini:</label>
+            <input type="password" id="api-key-input" class="w-full" placeholder="Pegue su clave API aquí...">
+        </div>
+        
+        <div class="input-group">
+            <label for="topicInput">Tema o Concepto:</label>
+            <textarea id="topicInput" placeholder="Ej: identidad cultural, arte urbano, tecnología social..." rows="3"></textarea>
+        </div>
+        
+        <div class="style-selector">
+            <div class="input-group">
+                <label for="thesisStyle">Estilo de Tesis (Agente 1):</label>
+                <select id="thesisStyle">
+                    <option value="CHOLA">CHOLA (Raíces)</option>
+                    <option value="MALANDRA">MALANDRA (Disrupción)</option>
+                    <option value="FRESA">FRESA (Tecnología)</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="antithesisStyle">Estilo de Antítesis (Agente 2):</label>
+                <select id="antithesisStyle">
+                    <option value="MALANDRA">MALANDRA (Disrupción)</option>
+                    <option value="FRESA">FRESA (Tecnología)</option>
+                    <option value="CHOLA">CHOLA (Raíces)</option>
+                </select>
+            </div>
+        </div>
+        
+        <button class="btn" id="generateBtn">GENERAR DIALECTIC 369 (T-A-S)</button>
+        <button class="btn btn-disrupt" id="disruptBtn" disabled>DISRUPCIÓN CREATIVA (Tesis Híbrida)</button>
+        
+        <div id="loading" class="loading hidden">
+            🔄 Generando síntesis híbrida...
+        </div>
+        
+        <div id="results" class="hidden">
+            <!-- Contenido inyectado dinámicamente por popup.js -->
+        </div>
+        
+        <div class="status" id="status">
+            Esperando clave API y texto...
+        </div>
+
+        <!-- History Section -->
+        <div class="history-title" id="historyTitle">
+            Historial Reciente
+            <span id="historyArrow">▼</span>
+        </div>
+        <div id="historyList" class="history-list hidden">
+            <p style="text-align: center; color: var(--text-dim);">No hay análisis recientes.</p>
+        </div>
+
     </div>
-    <div id="historyList" class="history-list">
-        <!-- History items injected here -->
-    </div>
 
-  </div>
-
-  <script src="popup.js"></script>
+    <script src="popup.js"></script>
 </body>
 </html>
-
