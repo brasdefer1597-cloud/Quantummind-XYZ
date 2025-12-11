@@ -1,175 +1,108 @@
-// background.js: Service Worker (Cerebro Central)
-// Este script maneja la lógica de la IA, la orquestación de las personalidades y la comunicación con la API.
-
-// --------------------------------------------------------
-// --- 1. CONFIGURACIÓN Y CONSTANTES ---
-// --------------------------------------------------------
-
-// Nota: La clave de API se asume que se obtendrá en tiempo de ejecución de un almacén seguro o se
-// inyectará. Para este entorno, la dejamos vacía y el runtime la proveerá.
-const API_KEY = ""; 
-const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
-const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
-const MAX_RETRIES = 5;
-
-// Definición de las 3 Personalidades Dialécticas (System Prompts)
-const PERSONAS = {
-    // THESIS (La Sabiduría de la Calle/Tradición): Analiza la base y la historia.
-    CHOLA: {
-        name: "CHOLA (Thesis)",
-        color: "#b91c1c", // Rojo Fuerte
-        systemPrompt: "Actúa como una experta en sabiduría popular, historia y conocimiento tradicional. Tu análisis debe ser firme, fundamentado en la experiencia de la vida real y la historia. Sé concisa y provee la base del argumento. Usa un tono de respeto y autoridad. Responde únicamente en un párrafo.",
-    },
-    // ANTITHESIS (La Disrupción/Caos): Desafía, encuentra riesgos y propone alternativas.
-    MALANDRA: {
-        name: "MALANDRA (Antithesis)",
-        color: "#1d4ed8", // Azul Oscuro
-        systemPrompt: "Actúa como una hacker, disruptora y experta en riesgos. Tu análisis debe desafiar activamente el texto, encontrar vulnerabilidades, puntos ciegos o sugerir un camino completamente opuesto y arriesgado. Sé audaz y no temas al conflicto. Responde únicamente en un párrafo.",
-    },
-    // SYNTHESIS (La Optimización/Estética): Sintetiza y refina la mejor conclusión.
-    FRESA: {
-        name: "FRESA (Synthesis)",
-        color: "#7e22ce", // Morado Lujoso
-        systemPrompt: "Actúa como una consultora de élite, enfocada en la estética, la optimización y la claridad. Tu análisis debe fusionar la fortaleza de la Tesis (CHOLA) con el riesgo de la Antítesis (MALANDRA) para crear la conclusión más pulcra, ética y de alto impacto. Responde únicamente en un párrafo.",
-    }
-};
-
-// --------------------------------------------------------
-// --- 2. RESILIENT API PROXY (Llamada con Backoff) ---
-// --------------------------------------------------------
+// Configuración de la API Key (debe estar vacía para el entorno Canvas)
+const API_KEY = "";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
 
 /**
- * Llama a la API de Gemini con reintentos de Backoff Exponencial.
- * @param {string} prompt El texto de la pregunta del usuario.
- * @param {string} systemInstruction El prompt del sistema para la personalidad.
- * @returns {Promise<string>} La respuesta del modelo.
+ * Función para simular el fallo de la API de Chrome y forzar el fallback a la API de Cloud/Web.
+ * En un entorno real de Chrome, 'ai.languageModel.generateContent' sería la primera opción.
  */
-async function callGeminiAPI(prompt, systemInstruction) {
-    const url = `${BASE_URL}${MODEL_NAME}:generateContent?key=${API_KEY}`;
+async function generateContentWithFallback(prompt) {
+    try {
+        // --- 1. Intento con la API de Chrome (Simulada o Real) ---
+        // En el entorno real, usaría: chrome.ai.languageModel.generateContent({ prompt: prompt })
+        // Aquí, simulamos que esto falla o no está disponible, y caemos al proxy.
+        // Simularemos un 10% de fallo para probar la resiliencia
+        if (Math.random() < 0.1) {
+            throw new Error("Simulación: Fallo de Gemini Nano/AI de Chrome. Activando ResilientAPIProxy (Cloud).");
+        }
+        
+        // Simulación de respuesta rápida de Nano
+        const simulatedNanoResponse = `[NANO: Análisis Base] La IA local confirma que la dialéctica es un proceso válido. El prompt se enviará al Cloud Proxy para un análisis más profundo.`;
+        // console.log(simulatedNanoResponse);
+
+    } catch (error) {
+        // console.error("Fallo de Nano/Chrome AI, cayendo a ResilientAPIProxy (Cloud).", error.message);
+        // Continuamos con el proxy de la Nube (API de Gemini)
+    }
+
+    // --- 2. ResilientAPIProxy: Llamada a la API de Gemini (Cloud) con Backoff ---
     const payload = {
         contents: [{ parts: [{ text: prompt }] }],
         systemInstruction: {
-            parts: [{ text: systemInstruction }]
+            parts: [{ text: "Eres un motor de IA Dialéctica. Tu objetivo es proporcionar una respuesta clara, profunda y estructurada, actuando como las tres personalidades: CHOLA (Tesis), MALANDRA (Antítesis) y FRESA (Síntesis). Genera la respuesta en el formato JSON especificado. Sé conciso y directo en cada rol." }]
         },
-        tools: [{ "google_search": {} }] // Habilitar Grounding
+        generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: "OBJECT",
+                properties: {
+                    thesis: { "type": "STRING", "description": "La perspectiva fundamental y conservadora (CHOLA)." },
+                    antithesis: { "type": "STRING", "description": "La perspectiva disruptiva y crítica (MALANDRA)." },
+                    synthesis: { "type": "STRING", "description": "La conclusión óptima y ejecutable (FRESA)." }
+                },
+                required: ["thesis", "antithesis", "synthesis"]
+            }
+        },
     };
 
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s, 8s, 16s...
+    let lastError = null;
+    for (let i = 0; i < 3; i++) { // Intentar 3 veces con backoff exponencial
+        const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+
+        if (i > 0) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            // console.log(`Reintentando API... Intento ${i + 1}`);
+        }
 
         try {
-            if (attempt > 0) {
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
-
-            const response = await fetch(url, {
+            const response = await fetch(GEMINI_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
-            if (response.ok) {
-                const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Error: No se recibió contenido.";
-                return text;
-            } else if (response.status === 429) {
-                // Too Many Requests - continuar con el reintento
-                console.warn(`Intento ${attempt + 1}: Límite de tasa alcanzado. Reintentando en ${delay}ms...`);
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (jsonText) {
+                // Colapso Cuántico: Parsear el JSON de la Síntesis
+                const parsedJson = JSON.parse(jsonText);
+                return parsedJson;
             } else {
-                // Otros errores HTTP (400, 500, etc.)
-                const errorText = await response.text();
-                throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+                throw new Error("Respuesta de IA vacía o formato incorrecto.");
             }
+
         } catch (error) {
-            console.error(`Error en el intento ${attempt + 1}:`, error.message);
-            if (attempt === MAX_RETRIES - 1) {
-                throw new Error("Fallo en la conexión después de múltiples reintentos.");
-            }
+            lastError = error;
+            // No registrar retries como errores, solo el fallo final.
         }
     }
-}
 
-// --------------------------------------------------------
-// --- 3. ORQUESTADOR DIALÉCTICO ---
-// --------------------------------------------------------
+    throw new Error(`Fallo final de la API después de múltiples reintentos: ${lastError.message}`);
+}
 
 /**
- * Ejecuta el proceso dialéctico (CHOLA, MALANDRA, FRESA) y luego la Síntesis.
- * @param {string} context El texto seleccionado por el usuario.
- * @returns {Promise<{results: Object, finalSynthesis: string}>} Resultados del debate.
+ * Escucha los mensajes desde el pop-up (popup.js)
  */
-async function runDialecticalOrchestrator(context) {
-    const results = {};
-    const personaPromises = [];
-    const prompt = `Analiza el siguiente texto y aplica tu rol: "${context}"`;
-
-    // 1. Ejecutar las 3 personalidades de forma concurrente
-    for (const key in PERSONAS) {
-        const persona = PERSONAS[key];
-        const promise = callGeminiAPI(prompt, persona.systemPrompt)
-            .then(response => {
-                results[key] = {
-                    name: persona.name,
-                    color: persona.color,
-                    response: response,
-                };
-            })
-            .catch(error => {
-                results[key] = {
-                    name: persona.name,
-                    color: persona.color,
-                    response: `Error en ${persona.name}: ${error.message}`,
-                };
-            });
-        personaPromises.push(promise);
-    }
-
-    // Esperar a que las 3 personalidades terminen
-    await Promise.all(personaPromises.map(p => p.catch(e => console.error("Error en promesa de personalidad:", e))));
-
-    // 2. Crear el prompt de Síntesis usando los resultados
-    const synthesisPrompt = `Genera una síntesis final, clara y concisa (máximo 4 oraciones) de este debate. 
-    Tesis (CHOLA): ${results.CHOLA?.response || 'No disponible'}
-    Antítesis (MALANDRA): ${results.MALANDRA?.response || 'No disponible'}
-    Tu objetivo es encontrar la mejor conclusión y plan de acción. Responde únicamente con la síntesis.`;
-    
-    // 3. Ejecutar la síntesis final
-    let finalSynthesis = "Error al generar la síntesis final.";
-    try {
-        // Usamos la personalidad FRESA para la síntesis final por su enfoque en la optimización.
-        finalSynthesis = await callGeminiAPI(synthesisPrompt, PERSONAS.FRESA.systemPrompt);
-    } catch (e) {
-        console.error("Fallo al generar la síntesis:", e);
-        finalSynthesis = "Fallo total al generar la síntesis dialéctica.";
-    }
-
-    return { results, finalSynthesis };
-}
-
-// --------------------------------------------------------
-// --- 4. MANEJO DE MENSAJES (Comunicación con Content Script) ---
-// --------------------------------------------------------
-
-// Listener para recibir mensajes desde el content_scripts.js (el texto seleccionado)
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    // Aseguramos que el mensaje sea la acción de inicio
-    if (message.action === "startDialecticalAnalysis" && message.context) {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // Asegurarse de que la respuesta sea asíncrona (mandato de Chrome)
+    if (request.action === 'runDialectic') {
+        const input = request.input;
         
-        // Ejecutamos la orquestación en segundo plano y enviamos el resultado.
-        runDialecticalOrchestrator(message.context)
-            .then(response => {
-                // Enviamos una respuesta de éxito al popup/content script
-                sendResponse({ status: "success", data: response });
+        generateContentWithFallback(input)
+            .then(result => {
+                // Devuelve la Tesis, Antítesis y Síntesis al pop-up
+                sendResponse(result); 
             })
             .catch(error => {
-                // Enviamos una respuesta de error
-                console.error("Error en Orquestador:", error);
-                sendResponse({ status: "error", message: error.message });
+                // Devuelve el error al pop-up
+                sendResponse({ error: error.message });
             });
-
-        // Retornar 'true' para indicar que sendResponse será llamado asíncronamente
-        return true; 
+        
+        return true; // Indica que la respuesta es asíncrona
     }
 });
-
-console.log("Service Worker de Chalamandra cargado.");
