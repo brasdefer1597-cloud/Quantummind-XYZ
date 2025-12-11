@@ -4,15 +4,15 @@
   "version": "1.0",
   "description": "Una IA Dialéctica (Tesis, Antítesis, Síntesis) para la toma de decisiones impulsada por Gemini Nano y Chrome AI.",
   "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
   },
   "action": {
     "default_icon": {
-      "16": "icon16.png",
-      "24": "icon48.png",
-      "32": "icon128.png"
+      "16": "icons/16.png",
+      "24": "icons/24.png",
+      "32": "icons/32.png"
     },
     "default_title": "CHALAMANDRA: Iniciar Análisis",
     "default_popup": "popup.html"
