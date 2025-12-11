@@ -1,1 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHALAMANDRA - Mi IA Dialéctica</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- React & Babel CDNs -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    /* Configuración de fuente base */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Estilos personalizados del componente React */
+    @keyframes blob {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .animate-blob {
+      animation: blob 7s infinite;
+    }
+    .animation-delay-2000 {
+      animation-delay: 2s;
+    }
+    .animation-delay-4000 {
+      animation-delay: 4s;
+    }
+    .animate-spin-reverse {
+      animation: spin 1s linear infinite reverse;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    /* Ajuste para textarea de demo */
+    textarea {
+      transition: all 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <!-- Punto de montaje de la aplicación React -->
+  <div id="root"></div>
 
+  <!-- Script que contiene la aplicación React (usando Babel para JSX) -->
+  <script type="text/babel">
+    // Importaciones simuladas para el entorno de un solo archivo
+    const { useState, useEffect, useRef } = React;
+    // Iconos de Lucide (simulados con clases y nombres)
+    const icons = {
+      Flame: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M12 2v3"/><path d="M16.5 14.5a2.5 2.5 0 0 1 0-5"/><path d="M7 21h10c3 0 5-1 5-5V8c0-2-1-3-3-3l-3-3"/><path d="M2 12c0-2 1-3 3-3h14c2 0 3 1 3 3v4c0 2-1 3-3 3H5c-2 0-3-1-3-3z"/></svg>,
+      Wind: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.7 7.7a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5z"/><path d="M2 12h3.5"/><path d="M22 12h-3.5"/><path d="M10 20v-3"/><path d="M14 20v-3"/><path d="M12 2v3"/><path d="M17.7 7.7a2.5 2.5 0 0 0-5 0 2.5 2.5 0 0 0 0 5"/><path d="M6.3 16.3a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5z"/><path d="M17.7 16.3a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1 0-5"/></svg>,
+      Lightbulb: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .9-2 1.6-3.1a2 2 0 0 0 0-3.3c-.5-1-1.3-2.2-1.9-3.3"/><path d="M10 2v3"/><path d="M14 2v3"/><path d="M12 18h0"/><path d="M12 18a2 2 0 0 0-2 2h4a2 2 0 0 0-2-2z"/></svg>,
+      Cpu: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="15" y="15" width="2" height="2" rx="1" fill="none"/><rect x="7" y="7" width="2" height="2" rx="1" fill="none"/><path d="M16 22H8c-3 0-4-1-4-4V6c0-3 1-4 4-4h8c3 0 4 1 4 4v12c0 3-1 4-4 4z"/><path d="M12 12h0"/></svg>,
+      Layers: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12.83 2.76.71 1.76c.15.38.45.68.83.83l1.76.71c.42.17.63.6.49 1.01l-1.76.71a1.2 1.2 0 0 0-.83.83l-.71 1.76c-.15.4-.67.4-.83 0l-.71-1.76a1.2 1.2 0 0 0-.83-.83l-1.76-.71c-.42-.17-.63-.6-.49-1.01l1.76-.71c.15-.38.45-.68.83-.83l.71-1.76c.42-.17.63-.6.49-1.01z"/><path d="M12.83 2.76 12 2l-2.07 5.14"/><path d="m14 12 5 3.5v-7L14 5l-5 3.5v7l5 3.5 5-3.5v-7z"/><path d="M14 19.5V23"/></svg>,
+      Activity: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20v-4"/><path d="M12 16v-4"/><path d="M12 12V8"/><path d="M12 8V4"/><path d="M16 20h2c1 0 2-1 2-2V6c0-1-1-2-2-2H6c-1 0-2 1-2 2v12c0 1 1 2 2 2h2"/></svg>,
+      ArrowRight: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
+      Database: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/></svg>,
+      Zap: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h8l-1 8 12-12h-8l1-8z"/></svg>,
+      ShieldCheck: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 13c0 5-2 9-5 9s-5-4-5-9V5l5-4 5 4z"/><path d="m9 12 2 2 4-4"/></svg>,
+      Brain: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15c2 0 4-2 4-4V2H8v9c0 2 2 4 4 4z"/><path d="M8 12V9"/><path d="M16 12V9"/><path d="M12 15v7"/><path d="M4 18h16"/></svg>,
+      Network: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2c-3.31 0-6 2.69-6 6v8c0 3.31 2.69 6 6 6s6-2.69 6-6V8c0-3.31-2.69-6-6-6z"/><path d="M12 6v12"/><path d="M12 6c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4z"/><path d="M12 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>,
+      Chrome: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M21.17 8H12"/><path d="M12 16.03V21.17"/><path d="M3 8h5.83"/><path d="M12 16.03h5.83"/></svg>,
+      Eye: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>,
+      Server: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6" y2="6"/><line x1="6" y1="18" x2="6" y2="18"/></svg>,
+      Code: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14 4-4 16"/></svg>,
+      TrendingUp: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>,
+      Users: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+      WifiOff: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M8.52 8.52A5.13 5.13 0 0 1 12 7c2.5 0 4.6 1.02 6.14 2.66l-1.35 1.46"/><path d="M10.74 16.74A2 2 0 0 1 12 17c.6 0 1.13-.24 1.5-.63"/><path d="M16.5 4.5A11 11 0 0 0 2 12h2.5"/><path d="M19 12h3.5A11 11 0 0 0 12 4.09"/></svg>,
+      FastForward: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg>,
+      Github: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.4 5.4 0 0 0 20 4.77 5.07 5.07 0 0 0 19.95 2c0-.52-.35-1-.85-1A1.73 1.73 0 0 0 17 2.97c-.36-.07-.73-.12-1.1-.12-1.5 0-2.85.73-3.79 1.83-1.07-.3-2.14-.5-3.2-.5-1.06 0-2.13.2-3.2.5C4.85 2.6 3.5 1.87 2 1.87c-.5 0-.85.48-.85 1 0 1.25.75 2.5 1.9 3.5.76.68 1.45 1.34 2.15 1.8.6.4 1.2.75 1.8.95C7.98 12.98 9 14 9 14v4.13"/></svg>
+    };
+
+    const { Flame, Wind, Lightbulb, Cpu, Layers, Activity, ArrowRight, Database, Zap, ShieldCheck, Brain, Network, Chrome, Eye, Server, Code, TrendingUp, Users, WifiOff, FastForward, Github } = icons;
+    
+    // --- COMPONENTE REACT CHALAMANDRA ---
+    const ChalamandraApp = () => {
+      const [activeSection, setActiveSection] = useState('hero');
+      const [demoInput, setDemoInput] = useState('');
+      const [demoState, setDemoState] = useState('idle'); // idle, processing, collapsed
+      const [synthesisResult, setSynthesisResult] = useState(null);
+
+      // Lógica de Simulación
+      const handleIgnite = () => {
+        if (!demoInput.trim()) return;
+        setDemoState('processing');
+        
+        // Simular Superposición Cuántica (Tiempo de procesamiento)
+        setTimeout(() => {
+          setDemoState('collapsed');
+          setSynthesisResult({
+            thesis: "La historia muestra que enfocarse en nichos de mercado construye la base más sólida. (CHOLA: Mi Núcleo de Sabiduría)",
+            antithesis: "Pero los nichos se están convirtiendo en cámaras de eco. Necesitas romper el molde y atraer al generalista caótico. (MALANDRA: Mi Motor de Disrupción)",
+            synthesis: "El Camino Óptimo: Construye para el nicho, pero utiliza un lenguaje generalista caótico para arrastrarlos a una nueva categoría. (FRESA: Síntesis Completa)",
+            level: 3,
+            alignment: 98.4
+          });
+        }, 3000);
+      };
+
+      const resetDemo = () => {
+        setDemoState('idle');
+        setSynthesisResult(null);
+        setDemoInput('');
+      };
+
+      return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-orange-500 selection:text-white overflow-x-hidden">
+          
+          {/* Navegación */}
+          <nav className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveSection('hero')}>
+                  <Flame className="w-6 h-6 text-orange-500 animate-pulse" />
+                  <span className="font-bold text-xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-purple-400">
+                    CHALAMANDRA
+                  </span>
+                </div>
+                <div className="hidden lg:block">
+                  <div className="flex items-baseline space-x-1">
+                    {['Hero', 'Philosophy', 'Trinity', 'Architecture', 'Extension', 'Impact', 'Demo'].map((item) => (
+                      <button
+                        key={item}
+                        onClick={() => setActiveSection(item.toLowerCase())}
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === item.toLowerCase() ? 'text-orange-400 bg-white/5' : 'hover:text-orange-400 hover:bg-white/5'}`}
+                      >
+                        {item === 'Hero' ? 'Inicio' : item === 'Philosophy' ? 'Filosofía' : item === 'Trinity' ? 'Trinidad' : item === 'Architecture' ? 'Arquitectura' : item === 'Extension' ? 'Extensión' : item === 'Impact' ? 'Impacto' : 'Demo'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          {/* Área de Contenido Principal */}
+          <div className="pt-16">
+            
+            {/* SECCIÓN HERO */}
+            {activeSection === 'hero' && (
+              <div className="relative overflow-hidden min-h-[90vh] flex items-center justify-center">
+                {/* Efecto de Fondo de Partículas Cuánticas */}
+                <div className="absolute inset-0 opacity-20">
+                  <div className="absolute top-20 left-20 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+                  <div className="absolute top-20 right-20 w-72 h-72 bg-orange-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+                  <div className="absolute -bottom-8 left-40 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
+                </div>
+
+                <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 animate-fade-in-up">
+                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    <span className="text-sm font-medium text-slate-300">Arquitectura Local-First con Gemini Nano</span>
+                  </div>
+                  
+                  <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-purple-400 to-blue-400">
+                    Mi Revolución de IA Dialéctica
+                  </h1>
+                  
+                  <p className="mt-4 text-xl text-slate-400 max-w-2xl mx-auto mb-10">
+                    Mi viaje de la parálisis creativa a la claridad cristalina. Aprovechando el poder de
+                    <span className="text-white font-semibold"> Tesis</span>, 
+                    <span className="text-white font-semibold"> Antítesis</span>, y 
+                    <span className="text-white font-semibold"> Síntesis </span> 
+                    impulsado por Superposición Cuántica.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row justify-center gap-4">
+                    <button 
+                      onClick={() => setActiveSection('demo')}
+                      className="px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold transition-all transform hover:scale-105 shadow-lg shadow-orange-900/50 flex items-center justify-center gap-2"
+                    >
+                      <Zap className="w-5 h-5" />
+                      Enciende Mi Motor
+                    </button>
+                    <button 
+                      onClick={() => setActiveSection('architecture')}
+                      className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold transition-all border border-slate-700 flex items-center justify-center gap-2"
+                    >
+                      <Cpu className="w-5 h-5" />
+                      Ver Mi Arquitectura
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SECCIÓN FILOSOFÍA */}
+            {activeSection === 'philosophy' && (
+              <div className="max-w-7xl mx-auto px-4 py-20">
+                <div className="grid md:grid-cols-2 gap-16 items-center">
+                  <div>
+                    <h2 className="text-4xl font-bold mb-6 text-orange-500">La Chispa: Mi Viaje Personal</h2>
+                    <p className="text-lg text-slate-300 leading-relaxed mb-6">
+                      Comenzó en una biblioteca universitaria. Vi mentes brillantes a mi alrededor atrapadas en bucles interminables de "qué pasaría si". 
+                      Vi el costo humano: ideas brillantes muriendo en la gestación. Me di cuenta de que esto no era falta de calidad, sino una abrumadora abundancia de opciones.
+                    </p>
+                    <div className="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                      <h3 className="text-xl font-bold text-purple-400 mb-2">Mi Epifanía</h3>
+                      <p className="text-slate-400">
+                        Mientras estudiaba la dialéctica hegeliana, me di cuenta: <span className="text-white italic">¿Y si pudiera computacionalizar esto?</span> 
+                        Fusioné la sabiduría antigua con el Pensamiento Cuántico. No solo construí una herramienta; construí un compañero de pensamiento para ayudarme a mí, y a ti, a encontrar claridad en el caos.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-2xl border border-slate-700 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+                    <div className="relative z-10 flex flex-col items-center justify-center h-full space-y-8">
+                        <div className="flex items-center gap-4 text-slate-500">
+                          <div className="w-16 h-16 rounded-full border-2 border-slate-600 flex items-center justify-center text-center text-xs">Mi Tesis<br/>(Historia)</div>
+                          <ArrowRight />
+                          <div className="w-16 h-16 rounded-full border-2 border-slate-600 flex items-center justify-center text-center text-xs">Mi Antítesis<br/>(Disrupción)</div>
+                        </div>
+                        <div className="w-1 h-8 bg-gradient-to-b from-slate-600 to-purple-500"></div>
+                        <div className="w-32 h-32 rounded-full bg-purple-600/20 border border-purple-500 flex items-center justify-center text-purple-300 font-bold text-xl shadow-[0_0_30px_rgba(147,51,234,0.3)]">
+                          Síntesis
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SECCIÓN TRINIDAD */}
+            {activeSection === 'trinity' && (
+              <div className="max-w-7xl mx-auto px-4 py-20">
+                <div className="text-center mb-16">
+                  <h2 className="text-4xl font-bold mb-4">Mi Matriz de Personalidades Trinidad</h2>
+                  <p className="text-slate-400">Capa 1: Diseñé tres "voces" distintas para debatir en superposición cuántica.</p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-8">
+                  {/* CHOLA */}
+                  <div className="group relative p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-orange-500/50 transition-all hover:-translate-y-2">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity">
+                      <Flame className="w-24 h-24 text-orange-600" />
+                    </div>
+                    <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center mb-6">
+                      <Flame className="w-6 h-6 text-orange-500" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">CHOLA</h3>
+                    <p className="text-sm font-mono text-orange-400 mb-4">Mi Núcleo de Sabiduría</p>
+                    <p className="text-slate-400 text-sm leading-relaxed">
+                      Mi especialista en reconocimiento de patrones. Ofrece perspectivas fundamentales y contexto histórico.
+                      "¿Qué ha funcionado antes? ¿Cuáles son los patrones establecidos?"
+                    </p>
+                  </div>
+
+                  {/* MALANDRA */}
+                  <div className="group relative p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 transition-all hover:-translate-y-2">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity">
+                      <Wind className="w-24 h-24 text-blue-600" />
+                    </div>
+                    <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-6">
+                      <Wind className="w-6 h-6 text-blue-500" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">MALANDRA</h3>
+                    <p className="text-sm font-mono text-blue-400 mb-4">Mi Motor de Disrupción</p>
+                    <p className="text-slate-400 text-sm leading-relaxed">
+                      Mi experta en análisis crítico. Desafía suposiciones, identifica riesgos y propone alternativas disruptivas.
+                      "¿Cuáles son los fallos ocultos?"
+                    </p>
+                  </div>
+
+                  {/* FRESA */}
+                  <div className="group relative p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition-all hover:-translate-y-2">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity">
+                      <Lightbulb className="w-24 h-24 text-purple-600" />
+                    </div>
+                    <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6">
+                      <Lightbulb className="w-6 h-6 text-purple-500" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">FRESA</h3>
+                    <p className="text-sm font-mono text-purple-400 mb-4">Mi Orquestadora de Síntesis</p>
+                    <p className="text-slate-400 text-sm leading-relaxed">
+                      Mi buscadora de caminos óptimos. Combina elementos, refina el mensaje y lo hace accionable.
+                      "¿Cómo podemos hacer esto claro e impactante?"
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SECCIÓN ARQUITECTURA */}
+            {activeSection === 'architecture' && (
+              <div className="max-w-7xl mx-auto px-4 py-20">
+                <div className="text-center mb-16">
+                  <h2 className="text-4xl font-bold mb-4">Mi Viaje Técnico</h2>
+                  <p className="text-slate-400">Implementando la Capa de Resiliencia y el Patrón C-C-F</p>
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-12">
+                  {/* Columna Izquierda: Especificaciones */}
+                  <div className="space-y-6">
+                    <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Database className="text-green-400" />
+                        <h3 className="font-bold text-lg">Mi ResilientAPIProxy</h3>
+                      </div>
+                      <p className="text-slate-400 text-sm">
+                        Construí una fachada unificada que implementa el patrón C-C-F. Si las APIs en la nube fallan, Gemini Nano toma el control instantáneamente para el procesamiento local.
+                        Las claves sensibles se alojan de forma segura en un entorno serverless perimetral (edge).
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Activity className="text-purple-400" />
+                        <h3 className="font-bold text-lg">Mi QuantumCollapse</h3>
+                      </div>
+                      <p className="text-slate-400 text-sm">
+                        Esta es mi "Salsa Secreta". Calcula puntuaciones de alineación basadas en `quantumProbability`, `evolutionCompatibility` y `resilienceScore`.
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Network className="text-blue-400" />
+                        <h3 className="font-bold text-lg">Mi DialecticalOrchestrator</h3>
+                      </div>
+                      <p className="text-slate-400 text-sm">
+                        Mi supervisor desacoplado. Ejecuta CHOLA, MALANDRA y FRESA en paralelo (superposición cuántica) antes de iniciar el colapso.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Columna Derecha: Diagrama Visual */}
+                  <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600 relative">
+                    <div className="absolute top-4 right-4 text-xs font-mono text-slate-500">ESTADO DEL SISTEMA: ONLINE</div>
+                    
+                    <div className="flex flex-col items-center space-y-6">
+                      {/* Entrada */}
+                      <div className="w-full max-w-md p-3 bg-slate-700 rounded text-center text-sm font-mono border border-slate-600">Entrada de Usuario</div>
+                      <ArrowRight className="rotate-90 text-slate-500" />
+                      
+                      {/* Orquestador */}
+                      <div className="w-full max-w-md p-4 bg-indigo-900/40 border border-indigo-500 rounded text-center">
+                        <div className="text-indigo-300 font-bold text-sm mb-2">Mi DialecticalOrchestrator</div>
+                        <div className="flex justify-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-orange-500 animate-ping"></div>
+                          <div className="w-2 h-2 rounded-full bg-blue-500 animate-ping delay-75"></div>
+                          <div className="w-2 h-2 rounded-full bg-purple-500 animate-ping delay-150"></div>
+                        </div>
+                      </div>
+
+                      {/* Rutas Divididas */}
+                      <div className="flex w-full max-w-md justify-between text-xs font-mono text-slate-400">
+                        <div className="text-center w-1/3 border-t border-slate-600 pt-2">Mi Tesis</div>
+                        <div className="text-center w-1/3 border-t border-slate-600 pt-2">Mi Antítesis</div>
+                        <div className="text-center w-1/3 border-t border-slate-600 pt-2">Mi Síntesis</div>
+                      </div>
+
+                      {/* Capa de Proxy API */}
+                      <div className="w-full max-w-md p-4 bg-slate-900 border border-green-500/30 rounded relative overflow-hidden">
+                        <div className="absolute inset-0 bg-green-500/5"></div>
+                        <div className="relative z-10 text-center">
+                          <h4 className="font-bold text-green-400 mb-1">Mi ResilientAPIProxy</h4>
+                          <div className="flex justify-center gap-4 text-xs mt-2">
+                            <span className="bg-blue-900/50 px-2 py-1 rounded text-blue-200 border border-blue-700">Cloud (Edge Server)</span>
+                            <span className="bg-emerald-900/50 px-2 py-1 rounded text-emerald-200 border border-emerald-700">Local (Nano)</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <ArrowRight className="rotate-90 text-slate-500" />
+
+                      {/* Colapso */}
+                      <div className="w-full max-w-md p-3 bg-purple-900/40 border border-purple-500 rounded text-center text-sm text-purple-200 font-bold shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                        QuantumCollapse (Síntesis)
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SECCIÓN EXTENSIÓN */}
+            {activeSection === 'extension' && (
+              <div className="max-w-7xl mx-auto px-4 py-20">
+                <div className="text-center mb-16">
+                  <h2 className="text-4xl font-bold mb-4">Mi Extensión de Chrome</h2>
+                  <p className="text-slate-400">La Interfaz de Usuario Definitiva para el Análisis Contextual</p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6 relative">
+                  {/* Líneas de Conexión (Solo Visual) */}
+                  <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-orange-500/20 via-blue-500/20 to-purple-500/20 -translate-y-1/2 z-0"></div>
+
+                  {/* Pop-up */}
+                  <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 z-10 relative">
+                    <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-slate-700">
+                      <Chrome className="text-white w-6 h-6" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">Pop-up (popup.html)</h3>
+                    <p className="text-slate-400 text-sm">
+                      Los controles de cara al usuario. Una interfaz simple para activar mi análisis o elegir personalidades manualmente.
+                    </p>
+                  </div>
+
+                  {/* Service Worker */}
+                  <div className="bg-indigo-900/20 p-8 rounded-2xl border border-indigo-500/50 z-10 relative shadow-[0_0_30px_rgba(99,102,241,0.1)]">
+                    <div className="w-12 h-12 bg-indigo-900/50 rounded-full flex items-center justify-center mb-4 border border-indigo-500">
+                      <Brain className="text-indigo-400 w-6 h-6" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2 text-indigo-200">El Cerebro (background.js)</h3>
+                    <p className="text-indigo-300/80 text-sm">
+                      El cerebro discreto. Aloja <code>DialecticalOrchestrator</code> y <code>QuantumCollapse</code>. Se comunica de forma segura con el Cloud Proxy.
+                    </p>
+                  </div>
+
+                  {/* Content Scripts */}
+                  <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 z-10 relative">
+                    <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-slate-700">
+                      <Eye className="text-white w-6 h-6" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">Los Ojos (content_scripts)</h3>
+                    <p className="text-slate-400 text-sm">
+                      Se inyecta en las páginas web para leer texto, manipular el DOM y proporcionar interacciones contextuales.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SECCIÓN IMPACTO (Aprendizajes + Futuro) */}
+            {activeSection === 'impact' && (
+              <div className="max-w-7xl mx-auto px-4 py-20">
+                
+                {/* Cuadrícula de Aprendizajes */}
+                <h2 className="text-3xl font-bold mb-8">Aprendizajes Clave y Revelaciones</h2>
+                <div className="grid md:grid-cols-2 gap-8 mb-20">
+                  <div className="bg-slate-900/50 p-6 rounded-xl border-l-4 border-green-500">
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                      <WifiOff className="w-5 h-5 text-green-500" /> El Poder de Local-First
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      El procesamiento en el dispositivo de Gemini Nano permitió un análisis dialéctico instantáneo, privado y sin conexión. 
+                      <span className="text-white block mt-2 font-medium">El 42% de mis usuarios prefiere el uso sin conexión.</span>
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-900/50 p-6 rounded-xl border-l-4 border-purple-500">
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                      <Users className="w-5 h-5 text-purple-500" /> IA Impulsada por la Personalidad
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      Los usuarios no solo vieron una herramienta; formaron conexiones con CHOLA, MALANDRA y FRESA.
+                      <span className="text-white block mt-2 font-medium">78% de reconocimiento y preferencia por el sistema de personas.</span>
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-900/50 p-6 rounded-xl border-l-4 border-blue-500">
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-blue-500" /> Revelación Progresiva
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      Mi Sistema de Evolución 3-6-9 creó un compromiso más profundo.
+                      <span className="text-white block mt-2 font-medium">Aumento de 3x en el uso activo diario debido a las mecánicas de progresión.</span>
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-900/50 p-6 rounded-xl border-l-4 border-orange-500">
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-orange-500" /> Más Allá de las Expectativas
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      Transferencia de Aprendizaje: El pensamiento dialéctico comenzó a influir en los procesos de toma de decisiones fuera de línea de mis usuarios.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Hoja de Ruta Futura */}
+                <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-10 border border-slate-700 relative overflow-hidden">
+                  <div className="absolute right-0 top-0 p-10 opacity-10">
+                    <FastForward className="w-40 h-40 text-white" />
+                  </div>
+                  
+                  <h2 className="text-3xl font-bold mb-6 relative z-10">¿Qué Sigue para Chalamandra?</h2>
+                  <div className="space-y-6 relative z-10 max-w-2xl">
+                    <div className="flex gap-4">
+                      <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">1</div>
+                      <div>
+                        <h4 className="font-bold text-lg">Mecanismo de Aprendizaje por Error</h4>
+                        <p className="text-slate-400 text-sm">Implementación de un sistema donde la retroalimentación del usuario (rechazo de la síntesis) ajusta directamente los pesos de QuantumCollapse.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">2</div>
+                      <div>
+                        <h4 className="font-bold text-lg">Interacciones Multimodales Mejoradas</h4>
+                        <p className="text-slate-400 text-sm">Análisis de contexto visual más profundo (por ejemplo, análisis de patrones UI/UX en imágenes).</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">3</div>
+                      <div>
+                        <h4 className="font-bold text-lg">Integración Nativa con Chrome</h4>
+                        <p className="text-slate-400 text-sm">Exploración de interacciones nativas del navegador para un flujo de trabajo más fluido.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SECCIÓN DEMO */}
+            {activeSection === 'demo' && (
+              <div className="max-w-4xl mx-auto px-4 py-20 min-h-[80vh] flex flex-col justify-center">
+                <div className="text-center mb-10">
+                  <h2 className="text-3xl font-bold mb-2">El Laboratorio Cuántico</h2>
+                  <p className="text-slate-400">Prueba mi Motor Dialéctico. Describe tu bloqueo creativo.</p>
+                </div>
+
+                <div className="bg-slate-900 rounded-2xl p-2 border border-slate-700 shadow-2xl">
+                  <div className="bg-slate-950 rounded-xl p-8 min-h-[400px] flex flex-col relative overflow-hidden">
+                    
+                    {/* Cuadrícula de Fondo */}
+                    <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'radial-gradient(circle, #333 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+
+                    {/* Estado de Entrada */}
+                    {demoState === 'idle' && (
+                      <div className="flex-1 flex flex-col items-center justify-center space-y-6 z-10">
+                        <Brain className="w-16 h-16 text-slate-600 mb-4" />
+                        <textarea 
+                          className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-lg p-4 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all resize-none h-32"
+                          placeholder="Ejemplo: Quiero lanzar un blog de tecnología, pero ya hay demasiados..."
+                          value={demoInput}
+                          onChange={(e) => setDemoInput(e.target.value)}
+                        ></textarea>
+                        <button 
+                          onClick={handleIgnite}
+                          disabled={!demoInput.trim()}
+                          className="px-8 py-3 bg-gradient-to-r from-orange-600 to-purple-600 hover:from-orange-500 hover:to-purple-500 text-white rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          <Zap className="w-4 h-4" />
+                          Enciende Mi Proceso Cuántico
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Estado de Procesamiento */}
+                    {demoState === 'processing' && (
+                      <div className="flex-1 flex flex-col items-center justify-center z-10">
+                        <div className="relative w-32 h-32 mb-8">
+                          {/* Orbitales Giratorios */}
+                          <div className="absolute inset-0 border-4 border-orange-500/30 rounded-full animate-spin"></div>
+                          <div className="absolute inset-2 border-4 border-blue-500/30 rounded-full animate-spin-reverse"></div>
+                          <div className="absolute inset-4 border-4 border-purple-500/30 rounded-full animate-pulse"></div>
+                          
+                          {/* Íconos Flotantes */}
+                          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                              <Brain className="w-8 h-8 text-white animate-bounce" />
+                          </div>
+                        </div>
+                        <div className="space-y-2 text-center">
+                          <div className="flex items-center gap-2 text-orange-400 text-sm animate-pulse">
+                            <Flame className="w-4 h-4" /> CHOLA Analizando mis patrones...
+                          </div>
+                          <div className="flex items-center gap-2 text-blue-400 text-sm animate-pulse delay-75">
+                            <Wind className="w-4 h-4" /> MALANDRA Generando mi disrupción...
+                          </div>
+                          <div className="flex items-center gap-2 text-purple-400 text-sm animate-pulse delay-150">
+                            <Lightbulb className="w-4 h-4" /> FRESA Calculando mi colapso...
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Estado de Colapso/Resultado */}
+                    {demoState === 'collapsed' && synthesisResult && (
+                      <div className="flex-1 flex flex-col z-10 animate-fade-in">
+                        <div className="flex justify-between items-start mb-6 border-b border-slate-800 pb-4">
+                          <div>
+                            <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Síntesis Completa</h3>
+                            <p className="text-xs text-slate-500 font-mono mt-1">
+                              Alineación: {synthesisResult.alignment}% | Nivel: {synthesisResult.level}
+                            </p>
+                          </div>
+                          <button onClick={resetDemo} className="text-slate-500 hover:text-white text-sm underline">Reiniciar</button>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4 mb-4 opacity-50 text-sm">
+                          <div className="p-3 border border-orange-900/30 bg-orange-900/10 rounded">
+                            <strong className="text-orange-500 block mb-1">Tesis</strong>
+                            {synthesisResult.thesis}
+                          </div>
+                          <div className="p-3 border border-blue-900/30 bg-blue-900/10 rounded">
+                            <strong className="text-blue-500 block mb-1">Antítesis</strong>
+                            {synthesisResult.antithesis}
+                          </div>
+                        </div>
+
+                        <div className="flex-1 p-6 bg-purple-900/20 border border-purple-500/30 rounded-xl flex items-center justify-center text-center relative overflow-hidden group">
+                          <div className="absolute inset-0 bg-purple-500/5 group-hover:bg-purple-500/10 transition-colors"></div>
+                          <p className="relative z-10 text-lg md:text-xl font-medium text-white">
+                            "{synthesisResult.synthesis}"
+                          </p>
+                          <ShieldCheck className="absolute bottom-4 right-4 w-6 h-6 text-purple-500 opacity-50" />
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* PIE DE PÁGINA */}
+            <footer className="bg-slate-900 border-t border-slate-800 py-12 mt-20">
+              <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-8">
+                <div className="col-span-2">
+                  <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-purple-400 mb-4">CHALAMANDRA</h3>
+                  <p className="text-slate-500 text-sm max-w-sm">
+                    Construido con pasión, probado a través del fuego y nacido de la creencia de que todos merecen claridad en un mundo complejo.
+                  </p>
+                  <p className="text-slate-600 text-xs mt-4">© 2025 chalamandra magistral decoX</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-bold text-white mb-4">Construido Con</h4>
+                  <ul className="space-y-2 text-sm text-slate-400">
+                    <li className="flex items-center gap-2"><Chrome className="w-4 h-4" /> Extensión de Google Chrome</li>
+                    <li className="flex items-center gap-2"><Cpu className="w-4 h-4" /> Gemini Nano (En Dispositivo)</li>
+                    <li className="flex items-center gap-2"><Server className="w-4 h-4" /> Funciones Edge Serverless</li>
+                    <li className="flex items-center gap-2"><Github className="w-4 h-4" /> GitHub</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-white mb-4">APIs de Chrome AI</h4>
+                  <ul className="space-y-2 text-sm text-slate-400 font-mono">
+                    <li>ai.languageModel</li>
+                    <li>ai.summarizer</li>
+                    <li>ai.writer</li>
+                    <li>ai.proofreader</li>
+                  </ul>
+                </div>
+              </div>
+            </footer>
+
+          </div>
+        </div>
+      );
+    };
+
+    // Renderizado del componente principal
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<ChalamandraApp />);
+  </script>
+</body>
+</html>
