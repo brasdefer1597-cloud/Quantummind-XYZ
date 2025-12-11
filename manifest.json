@@ -1,41 +1,31 @@
 {
   "manifest_version": 3,
-  "name": "Hybrid Dialectic 369",
+  "name": "CHALAMANDRA: IA Dialéctica",
   "version": "1.0",
-  "description": "Creative synthesis tool: Generates Thesis, Antithesis, and Synthesis from any concept.",
-  
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "assets/icon_16.png",
-      "48": "assets/icon_48.png",
-      "128": "assets/icon_128.png"
-    },
-    "default_title": "Hybrid Dialectic 369"
-  },
-  
+  "description": "Una IA Dialéctica (Tesis, Antítesis, Síntesis) para la toma de decisiones impulsada por Gemini Nano y Chrome AI.",
   "icons": {
-    "16": "assets/icon_16.png",
-    "48": "assets/icon_48.png",
-    "128": "assets/icon_128.png"
+    "16": "icons/flame16.png",
+    "48": "icons/flame48.png",
+    "128": "icons/flame128.png"
   },
-  
+  "action": {
+    "default_icon": {
+      "16": "icons/flame16.png",
+      "24": "icons/flame24.png",
+      "32": "icons/flame32.png"
+    },
+    "default_title": "CHALAMANDRA: Iniciar Análisis",
+    "default_popup": "popup.html"
+  },
   "permissions": [
     "activeTab",
-    "storage",
-    "contextMenus"
+    "scripting",
+    "storage"
   ],
-  
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*"
+  ],
   "background": {
     "service_worker": "background.js"
-  },
-
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "css": ["content.css"]
-    }
-  ]
+  }
 }
-
