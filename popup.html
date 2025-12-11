@@ -1,288 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dialectic 369</title>
+    <title>CHALAMANDRA Popup</title>
+    <!-- Tailwind CSS CDN para un estilo rápido y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --chola: #FF6B35; /* Chola Orange (Tesis) */
-            --malandra: #2EC4B6; /* Malandra Turquoise (Síntesis) */
-            --fresa: #E71D36; /* Fresa Red (Antítesis) */
-            --hybrida: #9D4EDD; /* Hybrid Purple (Disruption/Fusion) */
-            --bg: #1A1A2E; /* Dark Background */
-            --text-light: rgba(255, 255, 255, 0.7);
-            --text-dim: rgba(255, 255, 255, 0.5);
-        }
-        
         body {
-            width: 500px;
-            height: 600px;
-            background: var(--bg);
-            color: white;
-            font-family: 'Segoe UI', system-ui;
+            width: 320px; /* Tamaño fijo para el pop-up */
+            min-height: 400px;
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a09; /* slate-950 */
+            color: #e2e8f0; /* slate-200 */
+            padding: 0;
             margin: 0;
-            padding: 20px;
-            overflow-y: auto;
         }
-        
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .title {
-            text-align: center;
-            background: linear-gradient(45deg, var(--chola), var(--malandra), var(--fresa));
+        .text-gradient {
+            background-clip: text;
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: bold;
-            font-size: 1.4em;
-            margin-bottom: 10px;
+            color: transparent;
+            background-image: linear-gradient(to right, #fb923c, #a78bfa); /* orange-400 to purple-400 */
         }
-
-        .subtitle {
-            text-align: center;
-            font-size: 0.9em;
-            color: var(--text-light);
-            margin-bottom: 10px;
-        }
-        
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .input-group label {
-            font-weight: 500;
-            font-size: 0.9em;
-            color: var(--hybrida);
-        }
-        
-        input, textarea, select {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 8px;
-            color: white;
-            padding: 10px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--hybrida);
-        }
-        
-        textarea {
-            height: 80px;
-            resize: vertical;
-        }
-        
-        .style-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        
-        .btn {
-            background: linear-gradient(45deg, var(--chola), var(--malandra));
-            border: none;
-            border-radius: 25px;
-            color: white;
-            padding: 12px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        
-        .btn:hover:not(:disabled) {
-            transform: scale(1.02);
-            background: linear-gradient(45deg, var(--malandra), var(--fresa));
-            box-shadow: 0 6px 12px rgba(0,0,0,0.7);
-        }
-        .btn:active:not(:disabled) {
-            transform: scale(1.00);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        
-        .btn-disrupt {
-            background: linear-gradient(45deg, var(--fresa), var(--hybrida));
-        }
-        
-        .result {
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 10px;
-            border-left: 4px solid;
-            transition: border-color 0.3s;
-        }
-        
-        .thesis { border-left-color: var(--chola); }
-        .antithesis { border-left-color: var(--fresa); }
-        .synthesis { border-left-color: var(--malandra); }
-        .hybrid { border-left-color: var(--hybrida); }
-        
-        .tag {
-            font-size: 0.8em;
-            font-weight: bold;
-            opacity: 0.8;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .chola .tag { color: var(--chola); }
-        .malandra .tag { color: var(--malandra); }
-        .fresa .tag { color: var(--fresa); }
-        .hybrida .tag { color: var(--hybrida); }
-        
-        .content {
-            font-size: 0.95em;
-            line-height: 1.4;
-            white-space: pre-wrap;
-        }
-
-        .content a {
-            color: var(--malandra);
-            text-decoration: underline;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: var(--malandra);
-            font-weight: 600;
-        }
-        
-        .hidden {
-            display: none;
-        }
-
-        .status {
-            text-align: center;
-            font-size: 0.8em;
-            color: var(--text-dim);
-        }
-        
-        /* History Styles */
-        .history-title {
-            cursor: pointer;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            margin-top: 20px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.2s;
-            user-select: none;
-        }
-        .history-title:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .history-list {
-            padding: 10px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 300px;
-            overflow-y: auto;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .history-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 6px;
-            border-left: 3px solid var(--malandra);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .history-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .history-item strong {
-            color: var(--hybrida);
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-        }
-        .history-item small {
-            color: var(--text-dim);
-            font-size: 0.75em;
-            display: block;
-        }
-
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title">HYBRID DIALECTIC 369</div>
-        <div class="subtitle">Creative Inverse Mechanics</div>
-
-        <!-- El campo de la Clave API ha sido omitido -->
-        
-        <div class="input-group">
-            <label for="topicInput">Tema o Concepto:</label>
-            <textarea id="topicInput" placeholder="Ej: identidad cultural, arte urbano, tecnología social..." rows="3"></textarea>
-        </div>
-        
-        <div class="style-selector">
-            <div class="input-group">
-                <label for="thesisStyle">Estilo de Tesis (Agente 1):</label>
-                <select id="thesisStyle">
-                    <option value="CHOLA">CHOLA (Raíces)</option>
-                    <option value="MALANDRA">MALANDRA (Disrupción)</option>
-                    <option value="FRESA">FRESA (Tecnología)</option>
-                </select>
+    <div id="app" class="p-4">
+        <header class="flex items-center justify-between mb-4 border-b border-gray-800 pb-3">
+            <h1 class="text-xl font-bold text-gradient">CHALAMANDRA</h1>
+            <div id="status-indicator" class="flex items-center space-x-1 text-xs">
+                <span class="font-medium" id="status-text">Listo</span>
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse" id="status-dot"></span>
             </div>
+        </header>
+
+        <div id="input-section" class="mb-4">
+            <label for="user-input" class="block text-sm font-medium mb-2 text-gray-300">Tema a Analizar</label>
+            <textarea id="user-input" rows="4" placeholder="Ej: 'Cómo lanzar un producto de software en un mercado saturado.'" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-orange-500 resize-none"></textarea>
             
-            <div class="input-group">
-                <label for="antithesisStyle">Estilo de Antítesis (Agente 2):</label>
-                <select id="antithesisStyle">
-                    <option value="MALANDRA">MALANDRA (Disrupción)</option>
-                    <option value="FRESA">FRESA (Tecnología)</option>
-                    <option value="CHOLA">CHOLA (Raíces)</option>
-                </select>
-            </div>
-        </div>
-        
-        <button class="btn" id="generateBtn">GENERAR DIALECTIC 369 (T-A-S)</button>
-        <button class="btn btn-disrupt" id="disruptBtn" disabled>DISRUPCIÓN CREATIVA (Tesis Híbrida)</button>
-        
-        <div id="loading" class="loading hidden">
-            🔄 Generando síntesis híbrida...
-        </div>
-        
-        <div id="results" class="hidden">
-            <!-- Contenido inyectado dinámicamente por popup.js -->
-        </div>
-        
-        <div class="status" id="status">
-            Esperando clave API y texto...
+            <button id="ignite-button" class="mt-3 w-full px-4 py-2 bg-gradient-to-r from-orange-600 to-purple-600 hover:from-orange-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all disabled:opacity-50">
+                Encender Motor Dialéctico
+            </button>
+            <button id="content-script-button" class="mt-2 w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all text-sm">
+                Analizar Contenido de la Página
+            </button>
         </div>
 
-        <!-- History Section -->
-        <div class="history-title" id="historyTitle">
-            Historial Reciente
-            <span id="historyArrow">▼</span>
+        <div id="results-section" class="hidden">
+            <h2 class="text-lg font-semibold mb-2 text-purple-400">Síntesis (Fresa)</h2>
+            <div id="synthesis-output" class="p-3 bg-gray-900 border border-purple-700 rounded-lg text-sm mb-4 whitespace-pre-wrap"></div>
+            
+            <details class="mb-3">
+                <summary class="text-sm font-medium cursor-pointer text-orange-400 hover:text-orange-300">Ver Debate (CHOLA vs MALANDRA)</summary>
+                <div id="debate-output" class="mt-2 p-3 bg-gray-900 border border-gray-700 rounded-lg text-xs whitespace-pre-wrap"></div>
+            </details>
+
+            <button id="reset-button" class="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all text-sm">
+                Reiniciar
+            </button>
         </div>
-        <div id="historyList" class="history-list hidden">
-            <p style="text-align: center; color: var(--text-dim);">No hay análisis recientes.</p>
-        </div>
+
+        <div id="error-message" class="hidden p-3 bg-red-900/50 border border-red-700 text-red-300 rounded-lg text-sm mt-4"></div>
 
     </div>
-
     <script src="popup.js"></script>
 </body>
 </html>
